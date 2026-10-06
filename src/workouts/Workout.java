@@ -1,14 +1,10 @@
 package workouts;
 
-import goals.HealthGoal;
 import exercises.Exercise;
+import goals.HealthGoal;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Workout class as defined in the UML Class Diagram.
- * Represents a workout session containing assigned exercises and target health goals.
- */
 public class Workout {
     private int workoutId;
     private HealthGoal healthGoal;
@@ -62,22 +58,14 @@ public class Workout {
         this.workoutMinutes = workoutMinutes;
     }
 
-    /**
-     * Adds an exercise to the workout session and recalculates duration.
-     * @param exercise Exercise to add
-     */
     public void addExercise(Exercise exercise) {
         if (exercise != null) {
             this.exercises.add(exercise);
-            calculateWorkoutDuration();
+            calculateWorkoutDuration(); //recalculating duration after adding a new exercise into workout
         }
     }
 
-    /**
-     * Marks an exercise with the given ID as completed.
-     * @param exerciseId ID of exercise to mark complete
-     */
-    public void markCompletedExercise(int exerciseId) {
+    public void markCompletedExercise(int exerciseId) { //to mark an exercise of this workout as completed
         for (Exercise exercise : exercises) {
             if (exercise.getExerciseId() == exerciseId) {
                 exercise.setComplete(true);
@@ -86,9 +74,6 @@ public class Workout {
         }
     }
 
-    /**
-     * Sums up the durations of all exercises to calculate total workout duration in minutes.
-     */
     public void calculateWorkoutDuration() {
         int totalMinutes = 0;
         if (exercises != null) {

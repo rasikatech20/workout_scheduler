@@ -4,10 +4,6 @@ import exercises.Exercise;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * WorkoutHistory class as defined in the UML Class Diagram.
- * Maintains completed and missed exercises across workout sessions.
- */
 public class WorkoutHistory {
     private List<List<Exercise>> missedExercises;
     private List<List<Exercise>> completedExercises;
@@ -33,40 +29,11 @@ public class WorkoutHistory {
         this.completedExercises = completedExercises;
     }
 
-    /**
-     * Adds an empty workout record entry for a new session.
-     */
-    public void addWorkoutRecord() {
-        this.completedExercises.add(new ArrayList<>());
-        this.missedExercises.add(new ArrayList<>());
-    }
-
-    /**
-     * Adds a workout record entry with specific lists of completed and missed exercises.
-     * @param completed List of completed exercises in the session
-     * @param missed List of missed exercises in the session
-     */
     public void addWorkoutRecord(List<Exercise> completed, List<Exercise> missed) {
         this.completedExercises.add(completed != null ? completed : new ArrayList<>());
         this.missedExercises.add(missed != null ? missed : new ArrayList<>());
     }
 
-    /**
-     * Updates the most recent workout record.
-     */
-    public void updateWorkoutRecord() {
-        if (!completedExercises.isEmpty()) {
-            int lastIndex = completedExercises.size() - 1;
-            // Retain existing records or update latest entry
-        }
-    }
-
-    /**
-     * Updates a workout record at a specific session index.
-     * @param index Session record index
-     * @param completed Updated list of completed exercises
-     * @param missed Updated list of missed exercises
-     */
     public void updateWorkoutRecord(int index, List<Exercise> completed, List<Exercise> missed) {
         if (index >= 0 && index < completedExercises.size()) {
             if (completed != null) {
@@ -78,11 +45,6 @@ public class WorkoutHistory {
         }
     }
 
-    /**
-     * Generates a formatted history report string for a specified user.
-     * @param userId User ID
-     * @return Formatted report text
-     */
     public String generateHistoryReport(int userId) {
         StringBuilder report = new StringBuilder();
         report.append("=== WORKOUT HISTORY REPORT FOR USER ").append(userId).append(" ===\n");
@@ -104,10 +66,6 @@ public class WorkoutHistory {
         return report.toString();
     }
 
-    /**
-     * Returns the total count of workout sessions that contained missed exercises.
-     * @return Number of missed sessions
-     */
     public int getMissedWorkoutsCount() {
         int count = 0;
         for (List<Exercise> missedList : missedExercises) {
@@ -118,11 +76,6 @@ public class WorkoutHistory {
         return count;
     }
 
-    /**
-     * Filters exercise history lists by completion status.
-     * @param status Status string ("completed" or "missed")
-     * @return List of exercise lists matching status
-     */
     public List<List<Exercise>> getHistoryByCompletionStatus(String status) {
         if ("completed".equalsIgnoreCase(status)) {
             return completedExercises;
@@ -132,11 +85,7 @@ public class WorkoutHistory {
         return new ArrayList<>();
     }
 
-    /**
-     * Clears all workout history logs for the given user.
-     * @param userId User ID
-     */
-    public void clearHistory(int userId) {
+    public void clearHistory(int userId) { //to clear workout history logs for a user
         this.completedExercises.clear();
         this.missedExercises.clear();
     }
