@@ -1,6 +1,8 @@
 package scheduler;
 
 import exercises.Exercise;
+import goals.HealthGoal;
+import workouts.Workout;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +27,7 @@ public class MissedExerciseRescheduler {
         List<Exercise> missedExercises = new ArrayList<>();
 
         for (Exercise ex : exercises) {
-            if (!ex.isComplete) {
+            if (!ex.isComplete()) {
                 missedExercises.add(ex);
             }
         }
@@ -50,7 +52,7 @@ public class MissedExerciseRescheduler {
             while (index < missedExercises.size()) {
 
                 Exercise ex = missedExercises.get(index);
-                int duration = ex.getDurationMinutes;
+                int duration = ex.getDurationMinutes();
                 int timeNeeded = duration;
 
                 if (count > 0) {
@@ -93,10 +95,10 @@ public class MissedExerciseRescheduler {
                     + (missedExercises.size() - index));
         }
     }
-     public List<Workout> getRescheduledWorkouts(List<Exercise> missedExercises,
-                                            HealthGoal healthGoal,
-                                            int startWorkoutId)
-    {
+
+    public List<Workout> getRescheduledWorkouts(List<Exercise> missedExercises,
+                                           HealthGoal healthGoal,
+                                           int startWorkoutId) {
         List<Workout> rescheduled = new ArrayList<>();
     
         float minutesPerDay = hoursPerDay * 60;
@@ -109,7 +111,7 @@ public class MissedExerciseRescheduler {
             while (index < missedExercises.size()) {
                 Exercise ex = missedExercises.get(index);
     
-                float needed = ex.getDurationMinutes + (dayExercises.isEmpty() ? 0 : breakTime);
+                float needed = ex.getDurationMinutes() + (dayExercises.isEmpty() ? 0 : breakTime);
     
                 if (used + needed > minutesPerDay && !dayExercises.isEmpty()) {
                     break;
@@ -126,3 +128,4 @@ public class MissedExerciseRescheduler {
         return rescheduled;
     }
 }
+
