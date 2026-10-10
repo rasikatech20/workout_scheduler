@@ -4,6 +4,7 @@ import analytics.RecommendationServices;
 import assigners.ExerciseAssigner;
 import assigners.RegularExerciseAssigner;
 import exercises.Exercise;
+import exceptions.InvalidUserDataException;
 import models.User;
 import scheduler.ExerciseScheduler;
 import scheduler.MissedExerciseRescheduler;
@@ -54,9 +55,9 @@ public class Controller {
     /**
      * Assigns exercises to user based on user's cardiac status and health goal.
      */
-    public List<Exercise> assignExercises(User user) {
+    public List<Exercise> assignExercises(User user) throws InvalidUserDataException {
         if (user == null) {
-            return new ArrayList<>();
+            throw new InvalidUserDataException("Cannot assign exercises: User instance is null.");
         }
         exerciseAssigner.setExercisesAssigned(user.isHasCardiacProblems(), user.getHealthGoal());
         return exerciseAssigner.getExerciseAssigned();
@@ -65,9 +66,9 @@ public class Controller {
     /**
      * Creates a WorkoutPlan for the user by assigning exercises and scheduling them over user target days.
      */
-    public WorkoutPlan createWorkoutPlan(User user) {
+    public WorkoutPlan createWorkoutPlan(User user) throws InvalidUserDataException {
         if (user == null) {
-            return new WorkoutPlan();
+            throw new InvalidUserDataException("Cannot create workout plan: User instance is null.");
         }
         List<Exercise> assigned = assignExercises(user);
         int targetDays = user.getHealthGoal() != null ? user.getHealthGoal().getTargetDays() : 30;
@@ -77,12 +78,11 @@ public class Controller {
     }
 
     /**
-     * Generates a comprehensive recommendation report for the user by combining
-     * calorie, streak, history, cardiac safety, and missed workout recommendations.
+     * Generates a comprehensive recommendation report for the user.
      */
-    public String getRecommendation(User user) {
+    public String getRecommendation(User user) throws InvalidUserDataException {
         if (user == null) {
-            return "No user provided for recommendation.";
+            throw new InvalidUserDataException("Cannot generate recommendation report: User instance is null.");
         }
 
         CalorieTracker activeTracker = user.getCalorieTracker() != null ? user.getCalorieTracker() : this.calorieTracker;
@@ -105,8 +105,13 @@ public class Controller {
     /**
      * Reschedules missed exercises using MissedExerciseRescheduler.
      */
-    public void rescheduleMissedExercises(User user, int noOfDays, float hoursPerDay) {
-        if (user == null) return;
+    public void rescheduleMissedExercises(User user, int noOfDays, float hoursPerDay) throws InvalidUserDataException {
+        if (user == null) {
+            throw new InvalidUserDataException("Cannot reschedule missed exercises: User instance is null.");
+        }
+        if (noOfDays <= 0 || hoursPerDay <= 0.0f) {
+            throw new InvalidUserDataException("Invalid rescheduling target: noOfDays and hoursPerDay must be greater than zero.");
+        }
         WorkoutHistory history = user.getWorkoutHistory();
         List<Exercise> allMissed = new ArrayList<>();
         if (history != null) {
