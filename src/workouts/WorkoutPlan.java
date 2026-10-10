@@ -3,10 +3,6 @@ package workouts;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * WorkoutPlan class matching UML diagram.
- * Manages list of scheduled workouts per day.
- */
 public class WorkoutPlan {
     private List<Workout> workouts;
 
