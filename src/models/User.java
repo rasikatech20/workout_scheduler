@@ -11,8 +11,8 @@ import java.io.Serializable;
  * User entity class matching the UML Class Diagram specifications.
  * Updated to perform strict data validations and throw custom exceptions.
  */
-public class User implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class User  {
+    
     private int userId;
     private String name;
     private int age;
