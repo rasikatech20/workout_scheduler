@@ -1,11 +1,14 @@
 package models;
 
+import exceptions.InvalidGoalException;
+import exceptions.InvalidUserDataException;
 import goals.HealthGoal;
 import tracker.CalorieTracker;
 import workouts.WorkoutHistory;
 
 /**
  * User entity class matching the UML Class Diagram specifications.
+ * Updated to perform strict data validations and throw custom exceptions.
  */
 public class User {
     private int userId;
@@ -23,11 +26,21 @@ public class User {
 
     private static int idCounter = 1001;
 
-    public User(String name, int age, float weight_kg, float height_cm, HealthGoal healthGoal, int daysPerWeek, float hoursPerDay) {
+    public User(String name, int age, float weight_kg, float height_cm, HealthGoal healthGoal, int daysPerWeek, float hoursPerDay)
+            throws InvalidUserDataException, InvalidGoalException {
         this(name, age, weight_kg, height_cm, false, healthGoal, daysPerWeek, hoursPerDay);
     }
 
-    public User(String name, int age, float weight_kg, float height_cm, boolean hasCardiacProblems, HealthGoal healthGoal, int daysPerWeek, float hoursPerDay) {
+    public User(String name, int age, float weight_kg, float height_cm, boolean hasCardiacProblems, HealthGoal healthGoal, int daysPerWeek, float hoursPerDay)
+            throws InvalidUserDataException, InvalidGoalException {
+        validateName(name);
+        validateAge(age);
+        validateWeight(weight_kg);
+        validateHeight(height_cm);
+        validateHealthGoal(healthGoal);
+        validateDaysPerWeek(daysPerWeek);
+        validateHoursPerDay(hoursPerDay);
+
         this.userId = idCounter++;
         this.name = name;
         this.age = age;
@@ -44,6 +57,55 @@ public class User {
         this.calorieTracker.calculateDailyTargetCalorie(healthGoal, daysPerWeek, hoursPerDay);
     }
 
+    // Validation Helpers
+    private void validateName(String name) throws InvalidUserDataException {
+        if (name == null || name.trim().isEmpty()) {
+            throw new InvalidUserDataException("User name cannot be null or empty.");
+        }
+    }
+
+    private void validateAge(int age) throws InvalidUserDataException {
+        if (age <= 0 || age > 120) {
+            throw new InvalidUserDataException("Age must be between 1 and 120 years. Provided: " + age);
+        }
+    }
+
+    private void validateWeight(float weight) throws InvalidUserDataException {
+        if (weight <= 0.0f) {
+            throw new InvalidUserDataException("Weight must be greater than 0 kg. Provided: " + weight);
+        }
+    }
+
+    private void validateHeight(float height) throws InvalidUserDataException {
+        if (height <= 0.0f) {
+            throw new InvalidUserDataException("Height must be greater than 0 cm. Provided: " + height);
+        }
+    }
+
+    private void validateBp(float bp) throws InvalidUserDataException {
+        if (bp <= 0.0f) {
+            throw new InvalidUserDataException("Blood Pressure must be greater than 0. Provided: " + bp);
+        }
+    }
+
+    private void validateDaysPerWeek(int days) throws InvalidUserDataException {
+        if (days < 1 || days > 7) {
+            throw new InvalidUserDataException("Days per week must be between 1 and 7. Provided: " + days);
+        }
+    }
+
+    private void validateHoursPerDay(float hours) throws InvalidUserDataException {
+        if (hours <= 0.0f || hours > 24.0f) {
+            throw new InvalidUserDataException("Hours per day must be between 0 and 24. Provided: " + hours);
+        }
+    }
+
+    private void validateHealthGoal(HealthGoal goal) throws InvalidGoalException {
+        if (goal == null) {
+            throw new InvalidGoalException("Health goal cannot be null.");
+        }
+    }
+
     public int getUserId() {
         return userId;
     }
@@ -56,7 +118,8 @@ public class User {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(String name) throws InvalidUserDataException {
+        validateName(name);
         this.name = name;
     }
 
@@ -64,7 +127,8 @@ public class User {
         return age;
     }
 
-    public void setAge(int age) {
+    public void setAge(int age) throws InvalidUserDataException {
+        validateAge(age);
         this.age = age;
         if (calorieTracker != null) {
             calorieTracker.calculateBMR(weight_kg, height_cm, age, true);
@@ -76,7 +140,8 @@ public class User {
         return weight_kg;
     }
 
-    public void setWeight_kg(float weight_kg) {
+    public void setWeight_kg(float weight_kg) throws InvalidUserDataException {
+        validateWeight(weight_kg);
         this.weight_kg = weight_kg;
         if (calorieTracker != null) {
             calorieTracker.calculateBMR(weight_kg, height_cm, age, true);
@@ -88,7 +153,8 @@ public class User {
         return height_cm;
     }
 
-    public void setHeight_cm(float height_cm) {
+    public void setHeight_cm(float height_cm) throws InvalidUserDataException {
+        validateHeight(height_cm);
         this.height_cm = height_cm;
         if (calorieTracker != null) {
             calorieTracker.calculateBMR(weight_kg, height_cm, age, true);
@@ -100,7 +166,8 @@ public class User {
         return bp;
     }
 
-    public void setBp(float bp) {
+    public void setBp(float bp) throws InvalidUserDataException {
+        validateBp(bp);
         this.bp = bp;
     }
 
@@ -116,7 +183,8 @@ public class User {
         return healthGoal;
     }
 
-    public void setHealthGoal(HealthGoal healthGoal) {
+    public void setHealthGoal(HealthGoal healthGoal) throws InvalidGoalException {
+        validateHealthGoal(healthGoal);
         this.healthGoal = healthGoal;
         if (calorieTracker != null) {
             calorieTracker.calculateDailyTargetCalorie(healthGoal, daysPerWeek, hoursPerDay);
@@ -143,7 +211,8 @@ public class User {
         return daysPerWeek;
     }
 
-    public void setDaysPerWeek(int daysPerWeek) {
+    public void setDaysPerWeek(int daysPerWeek) throws InvalidUserDataException {
+        validateDaysPerWeek(daysPerWeek);
         this.daysPerWeek = daysPerWeek;
         if (calorieTracker != null) {
             calorieTracker.calculateDailyTargetCalorie(healthGoal, daysPerWeek, hoursPerDay);
@@ -154,7 +223,8 @@ public class User {
         return hoursPerDay;
     }
 
-    public void setHoursPerDay(float hoursPerDay) {
+    public void setHoursPerDay(float hoursPerDay) throws InvalidUserDataException {
+        validateHoursPerDay(hoursPerDay);
         this.hoursPerDay = hoursPerDay;
         if (calorieTracker != null) {
             calorieTracker.calculateDailyTargetCalorie(healthGoal, daysPerWeek, hoursPerDay);

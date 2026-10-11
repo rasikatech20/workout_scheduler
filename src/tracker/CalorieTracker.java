@@ -5,10 +5,6 @@ import goals.WeightLossGoal;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * CalorieTracker class representing calorie tracking functionality.
- * Tracks total calories burned, daily calorie burn logs, daily target calorie goals, and BMR.
- */
 public class CalorieTracker {
     private float totalCaloriesBurned;
     private float totalMissedCalories;

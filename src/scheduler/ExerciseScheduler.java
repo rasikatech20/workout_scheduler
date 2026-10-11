@@ -33,6 +33,14 @@ public class ExerciseScheduler {
         return (int) Math.ceil((double) exercises.size() / totalWorkoutDays);
     }
 
+    public boolean hasMoreExercises() {
+        return currentIndex < exercises.size();
+    }
+
+    public void resetScheduleIndex() {
+        this.currentIndex = 0;
+    }
+
     public void displayScheduledExercises() {
         int exercisesPerDay = computeNoOFExercisesperday();
         cumulativeTime = 0;
@@ -46,18 +54,18 @@ public class ExerciseScheduler {
     
             if (count > 0) {
                 cumulativeTime += breakTime;
-                System.out.println("Break: " + breakTime + " minutes");
+                System.out.println("  Break: " + breakTime + " minutes");
             }
     
-            System.out.println(ex.getName() + " - " + duration + " minutes");
+            System.out.println("  - " + ex.getName() + " (" + duration + " minutes)");
             cumulativeTime += duration;
             
             currentIndex++; // Advance to the next exercise for tomorrow
             count++;
         }
     
-        System.out.println("Number of exercises: " + count);
-        System.out.println("Total time: " + cumulativeTime + " minutes");
+        System.out.println("  Number of exercises: " + count);
+        System.out.println("  Total day time: " + cumulativeTime + " minutes");
     }
 
     public List<Workout> getWorkoutSchedule(HealthGoal healthGoal) {
