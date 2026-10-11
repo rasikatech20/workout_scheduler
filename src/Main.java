@@ -86,7 +86,10 @@ public class Main {
             session2Completed.add(assignedExercises.get(0));
         }
         if (assignedExercises.size() > 1) {
-            session2Missed.add(assignedExercises.get(1));
+            Exercise missedEx = assignedExercises.get(1);
+            session2Missed.add(missedEx);
+            // Log missed calories into CalorieTracker
+            user.getCalorieTracker().logMissedCalories(missedEx.getCalculatedCalories());
         }
         history.addWorkoutRecord(session2Completed, session2Missed);
 

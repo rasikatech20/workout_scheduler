@@ -21,12 +21,16 @@ public class RecommendationServices {
         }
 
         float totalBurned = calorieTracker.getTotalCaloriesBurned();
+        float totalMissed = calorieTracker.getTotalMissedCalories();
         float dailyTarget = calorieTracker.getDailyTargetCalorie();
         float deficitOrSurplus = calorieTracker.calculateDailyDeficitOrSurplusToBurn();
 
         StringBuilder rec = new StringBuilder();
         rec.append("=== Calorie-Based Recommendation ===\n");
         rec.append("Total Burned: ").append(String.format("%.1f", totalBurned)).append(" kcal | Daily Target: ").append(String.format("%.1f", dailyTarget)).append(" kcal\n");
+        if (totalMissed > 0) {
+            rec.append("Total Missed Burn: ").append(String.format("%.1f", totalMissed)).append(" kcal from missed exercises.\n");
+        }
 
         if (deficitOrSurplus > 0) {
             rec.append("Advice: You need to burn ").append(String.format("%.1f", deficitOrSurplus))

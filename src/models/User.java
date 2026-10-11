@@ -37,10 +37,11 @@ public class User {
         this.hasCardiacProblems = hasCardiacProblems;
         this.healthGoal = healthGoal;
         this.workoutHistory = new WorkoutHistory();
-        this.calorieTracker = new CalorieTracker(2000.0f, 1600.0f);
-        this.calorieTracker.calculateBMR(weight_kg, height_cm, age, true);
+        this.calorieTracker = new CalorieTracker();
         this.daysPerWeek = daysPerWeek;
         this.hoursPerDay = hoursPerDay;
+        this.calorieTracker.calculateBMR(weight_kg, height_cm, age, true);
+        this.calorieTracker.calculateDailyTargetCalorie(healthGoal, daysPerWeek, hoursPerDay);
     }
 
     public int getUserId() {
@@ -65,6 +66,10 @@ public class User {
 
     public void setAge(int age) {
         this.age = age;
+        if (calorieTracker != null) {
+            calorieTracker.calculateBMR(weight_kg, height_cm, age, true);
+            calorieTracker.calculateDailyTargetCalorie(healthGoal, daysPerWeek, hoursPerDay);
+        }
     }
 
     public float getWeight_kg() {
@@ -75,6 +80,7 @@ public class User {
         this.weight_kg = weight_kg;
         if (calorieTracker != null) {
             calorieTracker.calculateBMR(weight_kg, height_cm, age, true);
+            calorieTracker.calculateDailyTargetCalorie(healthGoal, daysPerWeek, hoursPerDay);
         }
     }
 
@@ -86,6 +92,7 @@ public class User {
         this.height_cm = height_cm;
         if (calorieTracker != null) {
             calorieTracker.calculateBMR(weight_kg, height_cm, age, true);
+            calorieTracker.calculateDailyTargetCalorie(healthGoal, daysPerWeek, hoursPerDay);
         }
     }
 
@@ -111,6 +118,9 @@ public class User {
 
     public void setHealthGoal(HealthGoal healthGoal) {
         this.healthGoal = healthGoal;
+        if (calorieTracker != null) {
+            calorieTracker.calculateDailyTargetCalorie(healthGoal, daysPerWeek, hoursPerDay);
+        }
     }
 
     public WorkoutHistory getWorkoutHistory() {
@@ -135,6 +145,9 @@ public class User {
 
     public void setDaysPerWeek(int daysPerWeek) {
         this.daysPerWeek = daysPerWeek;
+        if (calorieTracker != null) {
+            calorieTracker.calculateDailyTargetCalorie(healthGoal, daysPerWeek, hoursPerDay);
+        }
     }
 
     public float getHoursPerDay() {
@@ -143,6 +156,9 @@ public class User {
 
     public void setHoursPerDay(float hoursPerDay) {
         this.hoursPerDay = hoursPerDay;
+        if (calorieTracker != null) {
+            calorieTracker.calculateDailyTargetCalorie(healthGoal, daysPerWeek, hoursPerDay);
+        }
     }
 
     public void displayUserProfile() {

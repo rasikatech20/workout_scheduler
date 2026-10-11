@@ -1,5 +1,7 @@
 package tracker;
 
+import goals.HealthGoal;
+import goals.WeightLossGoal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,22 +11,17 @@ import java.util.List;
  */
 public class CalorieTracker {
     private float totalCaloriesBurned;
+    private float totalMissedCalories;
     private List<Float> caloriesBurntPerDay;
     private float dailyTargetCalorie;
     private float bmr;
 
     public CalorieTracker() {
         this.totalCaloriesBurned = 0.0f;
+        this.totalMissedCalories = 0.0f;
         this.caloriesBurntPerDay = new ArrayList<>();
-        this.dailyTargetCalorie = 2000.0f;
-        this.bmr = 1500.0f;
-    }
-
-    public CalorieTracker(float dailyTargetCalorie, float bmr) {
-        this.totalCaloriesBurned = 0.0f;
-        this.caloriesBurntPerDay = new ArrayList<>();
-        this.dailyTargetCalorie = dailyTargetCalorie;
-        this.bmr = bmr;
+        this.dailyTargetCalorie = 0.0f;
+        this.bmr = 0.0f;
     }
 
     public float getTotalCaloriesBurned() {
@@ -78,6 +75,52 @@ public class CalorieTracker {
     }
 
     /**
+     * Calculates the daily target calorie burn using user activity level and schedule:
+     * Activity multiplier based on daysPerWeek:
+     * - 5-7 days: 1.55 (Active)
+     * - 3-4 days: 1.375 (Moderate)
+     * - 1-2 days: 1.2 (Light)
+     * Daily exercise burn target = (BMR * (activityMultiplier - 1.0f)) + (hoursPerDay * 200.0f)
+     */
+    public float calculateDailyTargetCalorie(int daysPerWeek, float hoursPerDay) {
+        float activityMultiplier = 1.2f;
+        if (daysPerWeek >= 5) {
+            activityMultiplier = 1.55f;
+        } else if (daysPerWeek >= 3) {
+            activityMultiplier = 1.375f;
+        }
+        if (this.bmr > 0) {
+            this.dailyTargetCalorie = (this.bmr * (activityMultiplier - 1.0f)) + (hoursPerDay * 200.0f);
+        } else {
+            this.dailyTargetCalorie = (daysPerWeek * hoursPerDay * 150.0f);
+        }
+        return this.dailyTargetCalorie;
+    }
+
+    public float calculateDailyTargetCalorie(float bmr, int daysPerWeek, float hoursPerDay) {
+        this.bmr = bmr;
+        return calculateDailyTargetCalorie(daysPerWeek, hoursPerDay);
+    }
+
+    public float calculateDailyTargetCalorie(HealthGoal healthGoal, int daysPerWeek, float hoursPerDay) {
+        calculateDailyTargetCalorie(daysPerWeek, hoursPerDay);
+        if (healthGoal instanceof WeightLossGoal) {
+            WeightLossGoal wlg = (WeightLossGoal) healthGoal;
+            // 1 kg fat = ~7700 kcal -> daily deficit needed = (weeklyLossRate * 7700) / 7
+            float dailyDeficit = (wlg.getWeeklyLossRate() * 7700.0f) / 7.0f;
+            this.dailyTargetCalorie = Math.max(this.dailyTargetCalorie, dailyDeficit);
+        }
+        return this.dailyTargetCalorie;
+    }
+
+    public float calculateDailyTargetCalorie() {
+        if (this.dailyTargetCalorie == 0.0f && this.bmr > 0) {
+            this.dailyTargetCalorie = this.bmr * 0.35f;
+        }
+        return this.dailyTargetCalorie;
+    }
+
+    /**
      * Logs calories burned in a workout session.
      * Appends the value to caloriesBurntPerDay and updates totalCaloriesBurned.
      */
@@ -98,11 +141,28 @@ public class CalorieTracker {
         return dailyTargetCalorie - lastBurn;
     }
 
+    public float getTotalMissedCalories() {
+        return totalMissedCalories;
+    }
+
+    public void setTotalMissedCalories(float totalMissedCalories) {
+        this.totalMissedCalories = totalMissedCalories;
+    }
+
+    /**
+     * Logs calories missed from missed exercises/sessions.
+     * Appends to totalMissedCalories.
+     */
+    public void logMissedCalories(float calories) {
+        this.totalMissedCalories += calories;
+    }
+
     public void displayCalorieStatus() {
         System.out.println("=== Calorie Tracker Status ===");
         System.out.println("BMR                     : " + String.format("%.1f", bmr) + " kcal/day");
         System.out.println("Daily Target Burn       : " + String.format("%.1f", dailyTargetCalorie) + " kcal");
         System.out.println("Total Calories Burned   : " + String.format("%.1f", totalCaloriesBurned) + " kcal");
+        System.out.println("Total Missed Calories   : " + String.format("%.1f", totalMissedCalories) + " kcal");
         System.out.println("Days Logged             : " + caloriesBurntPerDay.size());
         if (!caloriesBurntPerDay.isEmpty()) {
             float lastBurn = caloriesBurntPerDay.get(caloriesBurntPerDay.size() - 1);
