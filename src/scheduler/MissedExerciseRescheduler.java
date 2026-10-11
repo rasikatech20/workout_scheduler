@@ -2,9 +2,9 @@ package scheduler;
 
 import exercises.Exercise;
 import goals.HealthGoal;
-import workouts.Workout;
 import java.util.ArrayList;
 import java.util.List;
+import workouts.Workout;
 
 public class MissedExerciseRescheduler {
 
@@ -24,20 +24,14 @@ public class MissedExerciseRescheduler {
             return;
         }
 
-        List<Exercise> missedExercises = new ArrayList<>();
-
-        for (Exercise ex : exercises) {
-            if (!ex.isComplete()) {
-                missedExercises.add(ex);
-            }
-        }
-
-        if (missedExercises.isEmpty()) {
+        if (exercises == null || exercises.isEmpty()) {
             System.out.println("No missed exercises to reschedule!");
             return;
         }
 
-        int availableTime = (int) (hoursPerDay * 60);
+        List<Exercise> missedExercises = new ArrayList<>(exercises);
+
+        int availableTime = (int) (hoursPerDay * 60); //only this much they can work
         int index = 0;
 
         System.out.println("Missed exercises: " + missedExercises.size());
@@ -60,7 +54,7 @@ public class MissedExerciseRescheduler {
                 }
 
                 if (cumulativeTime + timeNeeded > availableTime) {
-                    break;
+                    break; //time limit exceeded for that day so we go to next day
                 }
 
                 if (count > 0) {

@@ -3,8 +3,10 @@ package controller;
 import analytics.RecommendationServices;
 import assigners.ExerciseAssigner;
 import assigners.RegularExerciseAssigner;
-import exercises.Exercise;
 import exceptions.InvalidUserDataException;
+import exercises.Exercise;
+import java.util.ArrayList;
+import java.util.List;
 import models.User;
 import scheduler.ExerciseScheduler;
 import scheduler.MissedExerciseRescheduler;
@@ -14,14 +16,6 @@ import workouts.Workout;
 import workouts.WorkoutHistory;
 import workouts.WorkoutPlan;
 
-import java.util.ArrayList;
-import java.util.List;
-
-/**
- * Controller class as defined in the UML Class Diagram.
- * Central manager delegating actions to RecommendationServices, ExerciseScheduler,
- * ExerciseAssigner, MissedExerciseRescheduler, WorkoutHistory, and CalorieTracker.
- */
 public class Controller {
     private RecommendationServices recommendationServices;
     private ExerciseScheduler exerciseScheduler;
@@ -72,7 +66,7 @@ public class Controller {
         }
         List<Exercise> assigned = assignExercises(user);
         int targetDays = user.getHealthGoal() != null ? user.getHealthGoal().getTargetDays() : 30;
-        this.exerciseScheduler = new ExerciseScheduler(assigned, targetDays, user.getDaysPerWeek());
+        this.exerciseScheduler = new ExerciseScheduler(assigned, targetDays, user.getDaysPerWeek(), user.getHoursPerDay());
         List<Workout> workouts = exerciseScheduler.getWorkoutSchedule(user.getHealthGoal());
         return new WorkoutPlan(workouts);
     }
@@ -116,7 +110,7 @@ public class Controller {
         List<Exercise> allMissed = new ArrayList<>();
         if (history != null) {
             for (List<Exercise> sessionMissed : history.getMissedExercises()) {
-                allMissed.addAll(sessionMissed);
+                allMissed.addAll(sessionMissed); //addAll function used so adds all elements
             }
         }
         System.out.println(">>> Rescheduling " + allMissed.size() + " missed exercise(s) for user " + user.getName() + "...");

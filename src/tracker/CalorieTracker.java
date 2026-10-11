@@ -52,9 +52,7 @@ public class CalorieTracker {
         this.bmr = bmr;
     }
 
-    /**
-     * Returns the currently stored BMR.
-     */
+    //Returns the currently stored BMR.
     public float calculateBMR() {
         return bmr;
     }
@@ -64,6 +62,7 @@ public class CalorieTracker {
      * BMR = (10 * weight_kg) + (6.25 * height_cm) - (5 * age) + s (s = +5 for male, -161 for female)
      * Updates and returns the calculated BMR.
      */
+    //BMR-basal metabolic rate(no of calories our body burns at rest)
     public float calculateBMR(float weight_kg, float height_cm, int age, boolean isMale) {
         float genderFactor = isMale ? 5.0f : -161.0f;
         this.bmr = (10.0f * weight_kg) + (6.25f * height_cm) - (5.0f * age) + genderFactor;
@@ -71,41 +70,29 @@ public class CalorieTracker {
     }
 
     /**
-     * Calculates the daily target calorie burn using user activity level and schedule:
-     * Activity multiplier based on daysPerWeek:
-     * - 5-7 days: 1.55 (Active)
-     * - 3-4 days: 1.375 (Moderate)
-     * - 1-2 days: 1.2 (Light)
-     * Daily exercise burn target = (BMR * (activityMultiplier - 1.0f)) + (hoursPerDay * 200.0f)
+     * Calculates the daily target calorie burn using user activity level and schedule,
+     * with any weight-loss goal requirement applied as a lower bound.
      */
-    public float calculateDailyTargetCalorie(int daysPerWeek, float hoursPerDay) {
+    public float calculateDailyTargetCalorie(HealthGoal healthGoal, int daysPerWeek, float hoursPerDay) {
         float activityMultiplier = 1.2f;
         if (daysPerWeek >= 5) {
             activityMultiplier = 1.55f;
         } else if (daysPerWeek >= 3) {
             activityMultiplier = 1.375f;
         }
+
         if (this.bmr > 0) {
             this.dailyTargetCalorie = (this.bmr * (activityMultiplier - 1.0f)) + (hoursPerDay * 200.0f);
         } else {
             this.dailyTargetCalorie = (daysPerWeek * hoursPerDay * 150.0f);
         }
-        return this.dailyTargetCalorie;
-    }
 
-    public float calculateDailyTargetCalorie(float bmr, int daysPerWeek, float hoursPerDay) {
-        this.bmr = bmr;
-        return calculateDailyTargetCalorie(daysPerWeek, hoursPerDay);
-    }
-
-    public float calculateDailyTargetCalorie(HealthGoal healthGoal, int daysPerWeek, float hoursPerDay) {
-        calculateDailyTargetCalorie(daysPerWeek, hoursPerDay);
         if (healthGoal instanceof WeightLossGoal) {
             WeightLossGoal wlg = (WeightLossGoal) healthGoal;
-            // 1 kg fat = ~7700 kcal -> daily deficit needed = (weeklyLossRate * 7700) / 7
-            float dailyDeficit = (wlg.getWeeklyLossRate() * 7700.0f) / 7.0f;
-            this.dailyTargetCalorie = Math.max(this.dailyTargetCalorie, dailyDeficit);
+            float dailyDeficit = (wlg.getWeeklyLossRate() * 7700.0f) / 7.0f; //calculating the calories per day i should be under in my level so that i can lose my planned weight
+            this.dailyTargetCalorie = Math.max(this.dailyTargetCalorie, dailyDeficit);//makes sure target is not less that deficity needed
         }
+
         return this.dailyTargetCalorie;
     }
 
@@ -133,7 +120,7 @@ public class CalorieTracker {
         if (caloriesBurntPerDay.isEmpty()) {
             return dailyTargetCalorie;
         }
-        float lastBurn = caloriesBurntPerDay.get(caloriesBurntPerDay.size() - 1);
+        float lastBurn = caloriesBurntPerDay.get(caloriesBurntPerDay.size() - 1);//recent
         return dailyTargetCalorie - lastBurn;
     }
 

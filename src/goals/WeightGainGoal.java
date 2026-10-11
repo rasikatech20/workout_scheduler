@@ -7,16 +7,28 @@ public class WeightGainGoal extends HealthGoal {
     private float currentWeight;
     private float weeklyGainRate;
 
-    public WeightGainGoal(String goalName, int targetDays, float targetWeight, float currentWeight, float weeklyGainRate) {
+    public WeightGainGoal(String goalName, int targetDays, float targetWeight, float currentWeight) {
         super(goalName, targetDays, targetWeight);
         this.currentWeight = currentWeight;
-        this.weeklyGainRate = weeklyGainRate;
+        this.weeklyGainRate = computeWeeklyGainRate();
     }
 
-    public WeightGainGoal(int targetDays, float targetWeight, float currentWeight, float weeklyGainRate) {
+    public WeightGainGoal(int targetDays, float targetWeight, float currentWeight) {
         super("Weight Gain Goal", targetDays, targetWeight);
         this.currentWeight = currentWeight;
-        this.weeklyGainRate = weeklyGainRate;
+        this.weeklyGainRate = computeWeeklyGainRate();
+    }
+
+    private float computeWeeklyGainRate() {
+        if (targetDays <= 0) {
+            return 0.0f;
+        }
+        float weightToGain = Math.max(0.0f, targetWeight - currentWeight);
+        float weeks = targetDays / 7.0f;
+        if (weeks <= 0.0f) {
+            return 0.0f;
+        }
+        return weightToGain / weeks;
     }
 
     public float getCurrentWeight() {
@@ -25,6 +37,7 @@ public class WeightGainGoal extends HealthGoal {
 
     public void setCurrentWeight(float currentWeight) {
         this.currentWeight = currentWeight;
+        this.weeklyGainRate = computeWeeklyGainRate();
     }
 
     public float getWeeklyGainRate() {
@@ -32,7 +45,7 @@ public class WeightGainGoal extends HealthGoal {
     }
 
     public void setWeeklyGainRate(float weeklyGainRate) {
-        this.weeklyGainRate = weeklyGainRate;
+        this.weeklyGainRate = computeWeeklyGainRate();
     }
 
     @Override

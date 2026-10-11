@@ -13,6 +13,11 @@ public class WorkoutHistory {
         this.completedExercises = new ArrayList<>();
     }
 
+    public WorkoutHistory(List<List<Exercise>> completedExercises, List<List<Exercise>> missedExercises) {
+        this.completedExercises = completedExercises != null ? new ArrayList<>(completedExercises) : new ArrayList<>();
+        this.missedExercises = missedExercises != null ? new ArrayList<>(missedExercises) : new ArrayList<>();
+    }
+
     public List<List<Exercise>> getMissedExercises() {
         return missedExercises;
     }

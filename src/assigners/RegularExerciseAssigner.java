@@ -1,13 +1,12 @@
 package assigners;
 
-import goals.HealthGoal;
-import goals.WeightLossGoal;
-import goals.WeightGainGoal;
 import exercises.Exercise;
-import exercises.WeightLossExercise;
-import exercises.WeightGainExercise;
 import exercises.ExerciseRepository;
-
+import exercises.WeightGainExercise;
+import exercises.WeightLossExercise;
+import goals.HealthGoal;
+import goals.WeightGainGoal;
+import goals.WeightLossGoal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +32,7 @@ public class RegularExerciseAssigner implements ExerciseAssigner {
             List<WeightLossExercise> pool = ExerciseRepository.getPredefinedWeightLossExercises();
             for (WeightLossExercise ex : pool) {
                 if (hasCardiacProblem) {
-                    if (ex.getIntensityLevel() <= 5.0f) {
+                    if (ex.getIntensityLevel() <= 5.0f) { //if user has cardiac problem and that exercise is less intense-then accept
                         suitableExercises.add(ex);
                     }
                 } else {

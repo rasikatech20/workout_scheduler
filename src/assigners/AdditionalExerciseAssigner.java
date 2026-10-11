@@ -1,13 +1,12 @@
 package assigners;
 
-import goals.HealthGoal;
-import goals.WeightLossGoal;
-import goals.WeightGainGoal;
 import exercises.Exercise;
-import exercises.WeightLossExercise;
-import exercises.WeightGainExercise;
 import exercises.ExerciseRepository;
-
+import exercises.WeightGainExercise;
+import exercises.WeightLossExercise;
+import goals.HealthGoal;
+import goals.WeightGainGoal;
+import goals.WeightLossGoal;
 import java.util.ArrayList;
 import java.util.List;
 

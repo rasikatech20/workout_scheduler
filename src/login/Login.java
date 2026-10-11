@@ -6,23 +6,19 @@ import exceptions.LoginFailedException;
 import goals.HealthGoal;
 import goals.WeightGainGoal;
 import goals.WeightLossGoal;
-import models.User;
-
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import models.User;
 
-/**
- * Simple user login and registration manager using only FileReader and FileWriter.
- * Contains only register, authenticate, and noOfUserLogins functions.
- */
 public class Login {
-    private static final String FILE_NAME = "users.txt";
+    private static final String FILE_NAME = "user_database.txt";
     private static int loginCount = 0;
 
     /**
-     * Registers a new user and appends to users.txt using FileWriter.
+     * Registers a new user and appends to user_database.txt using FileWriter.
      */
     public User register(String name, int age, float weight_kg, float height_cm, boolean hasCardiacProblems, HealthGoal healthGoal, int daysPerWeek, float hoursPerDay)
             throws InvalidUserDataException, InvalidGoalException {
@@ -35,8 +31,12 @@ public class Login {
         User newUser = new User(name, age, weight_kg, height_cm, hasCardiacProblems, healthGoal, daysPerWeek, hoursPerDay);
 
         // Check if user already exists
-        if (findUser(name) != null) {
-            throw new InvalidUserDataException("User '" + name + "' already exists. Please authenticate.");
+        try {
+            if (findUser(name) != null) {
+                throw new InvalidUserDataException("User '" + name + "' already exists. Please authenticate.");
+            }
+        } catch (FileNotFoundException e) {
+            // Database file does not exist yet; this is fine for first registration.
         }
 
         // Append user to file using FileWriter
@@ -65,14 +65,18 @@ public class Login {
             throw new LoginFailedException("Name cannot be empty.");
         }
 
-        User user = findUser(name);
-        if (user == null) {
-            throw new LoginFailedException("User '" + name + "' not found.");
-        }
+        try {
+            User user = findUser(name);
+            if (user == null) {
+                throw new LoginFailedException("User '" + name + "' not found.");
+            }
 
-        loginCount++;
-        System.out.println("User '" + name + "' authenticated successfully.");
-        return user;
+            loginCount++;
+            System.out.println("User '" + name + "' authenticated successfully.");
+            return user;
+        } catch (FileNotFoundException e) {
+            throw new LoginFailedException("User database file not found: " + FILE_NAME);
+        }
     }
 
     /**
@@ -82,10 +86,12 @@ public class Login {
         return loginCount;
     }
 
-    // Simple helper to read users.txt using FileReader
-    private User findUser(String name) {
+    //to read user_database.txt using FileReader
+    private User findUser(String name) throws FileNotFoundException {
         File file = new File(FILE_NAME);
-        if (!file.exists()) return null;
+        if (!file.exists()) {
+            throw new FileNotFoundException("User database file not found: " + FILE_NAME);
+        }
 
         StringBuilder sb = new StringBuilder();
         try (FileReader reader = new FileReader(file)) {
@@ -115,8 +121,8 @@ public class Login {
                     float hoursPerDay = Float.parseFloat(p[9]);
 
                     HealthGoal goal = goalName.toLowerCase().contains("gain")
-                            ? new WeightGainGoal(goalName, targetDays, targetWeight, weight, 0.5f)
-                            : new WeightLossGoal(goalName, targetDays, targetWeight, weight, 1.0f);
+                            ? new WeightGainGoal(goalName, targetDays, targetWeight, weight)
+                            : new WeightLossGoal(goalName, targetDays, targetWeight, weight);
 
                     return new User(p[0], age, weight, height, hasCardiac, goal, daysPerWeek, hoursPerDay);
                 } catch (Exception e) {

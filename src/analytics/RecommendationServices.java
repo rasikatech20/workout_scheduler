@@ -3,12 +3,6 @@ package analytics;
 import tracker.CalorieTracker;
 import workouts.WorkoutHistory;
 
-/**
- * RecommendationServices class as defined in the UML Class Diagram.
- * Generates personalized, rule-based recommendations for users based on
- * calorie burn progress, workout streak, history performance, cardiac safety,
- * and missed workout recovery.
- */
 public class RecommendationServices {
 
     /**

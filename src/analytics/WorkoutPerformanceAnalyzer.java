@@ -47,7 +47,7 @@ public class WorkoutPerformanceAnalyzer {
         int streak = 0;
         for (int i = completed.size() - 1; i >= 0; i--) {
             boolean hasCompleted = !completed.get(i).isEmpty();
-            boolean hasMissed = (i < missed.size()) && !missed.get(i).isEmpty();
+            boolean hasMissed = (i < missed.size()) && !missed.get(i).isEmpty(); //to prevent indexoutofboundsexception
             if (hasCompleted && !hasMissed) {
                 streak++;
             } else {
@@ -89,7 +89,7 @@ public class WorkoutPerformanceAnalyzer {
             return "Stable Trend";
         }
     }
-
+    //most recent best performing day
     public String getBestPerformingDay(WorkoutHistory history) {
         if (history == null || history.getCompletedExercises().isEmpty()) {
             return "No history available";

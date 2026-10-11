@@ -5,7 +5,7 @@ import java.util.function.Function;
 
 public class CalorieCalculator<T extends Exercise> {
 
-    public <E extends T> float calculateCalories(E exercise) {
+    public <E extends T> float calculateCalories(E exercise) { //E must be compatible with T
         if (exercise == null) {
             return 0.0f;
         }

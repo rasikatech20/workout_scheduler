@@ -5,12 +5,7 @@ import exceptions.InvalidUserDataException;
 import goals.HealthGoal;
 import tracker.CalorieTracker;
 import workouts.WorkoutHistory;
-import java.io.Serializable;
 
-/**
- * User entity class matching the UML Class Diagram specifications.
- * Updated to perform strict data validations and throw custom exceptions.
- */
 public class User  {
     
     private int userId;
@@ -19,6 +14,7 @@ public class User  {
     private float weight_kg;
     private float height_cm;
     private float bp;
+    private String gender;
     private boolean hasCardiacProblems;
     private HealthGoal healthGoal;
     private WorkoutHistory workoutHistory;
@@ -30,10 +26,16 @@ public class User  {
 
     public User(String name, int age, float weight_kg, float height_cm, HealthGoal healthGoal, int daysPerWeek, float hoursPerDay)
             throws InvalidUserDataException, InvalidGoalException {
-        this(name, age, weight_kg, height_cm, false, healthGoal, daysPerWeek, hoursPerDay);
+        this(name, age, weight_kg, height_cm, false, healthGoal, daysPerWeek, hoursPerDay, null);
     }
 
     public User(String name, int age, float weight_kg, float height_cm, boolean hasCardiacProblems, HealthGoal healthGoal, int daysPerWeek, float hoursPerDay)
+            throws InvalidUserDataException, InvalidGoalException {
+        this(name, age, weight_kg, height_cm, hasCardiacProblems, healthGoal, daysPerWeek, hoursPerDay, null);
+    }
+
+    public User(String name, int age, float weight_kg, float height_cm, boolean hasCardiacProblems, HealthGoal healthGoal,
+                int daysPerWeek, float hoursPerDay, String gender)
             throws InvalidUserDataException, InvalidGoalException {
         validateName(name);
         validateAge(age);
@@ -42,6 +44,7 @@ public class User  {
         validateHealthGoal(healthGoal);
         validateDaysPerWeek(daysPerWeek);
         validateHoursPerDay(hoursPerDay);
+        validateGender(gender);
 
         this.userId = idCounter++;
         this.name = name;
@@ -49,14 +52,56 @@ public class User  {
         this.weight_kg = weight_kg;
         this.height_cm = height_cm;
         this.bp = 120.0f;
+        this.gender = normalizeGender(gender);
         this.hasCardiacProblems = hasCardiacProblems;
         this.healthGoal = healthGoal;
         this.workoutHistory = new WorkoutHistory();
         this.calorieTracker = new CalorieTracker();
         this.daysPerWeek = daysPerWeek;
         this.hoursPerDay = hoursPerDay;
-        this.calorieTracker.calculateBMR(weight_kg, height_cm, age, true);
+        this.calorieTracker.calculateBMR(weight_kg, height_cm, age, isMale());
         this.calorieTracker.calculateDailyTargetCalorie(healthGoal, daysPerWeek, hoursPerDay);
+    }
+
+    // Validation Helpers
+    private void validateGender(String gender) throws InvalidUserDataException {
+        if (gender == null || gender.trim().isEmpty()) {
+            return;
+        }
+        if (normalizeGender(gender) == null) {
+            throw new InvalidUserDataException("Gender must be 'male' or 'female'.");
+        }
+    }
+
+    private String normalizeGender(String gender) {
+        if (gender == null) {
+            return null;
+        }
+        String normalized = gender.trim();
+        if (normalized.equalsIgnoreCase("m") || normalized.equalsIgnoreCase("male")) {
+            return "male";
+        }
+        if (normalized.equalsIgnoreCase("f") || normalized.equalsIgnoreCase("female")) {
+            return "female";
+        }
+        return null;
+    }
+
+    public boolean isMale() {
+        return gender != null && "male".equalsIgnoreCase(gender);
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) throws InvalidUserDataException {
+        validateGender(gender);
+        this.gender = normalizeGender(gender);
+        if (calorieTracker != null) {
+            calorieTracker.calculateBMR(weight_kg, height_cm, age, isMale());
+            calorieTracker.calculateDailyTargetCalorie(healthGoal, daysPerWeek, hoursPerDay);
+        }
     }
 
     // Validation Helpers
@@ -133,7 +178,7 @@ public class User  {
         validateAge(age);
         this.age = age;
         if (calorieTracker != null) {
-            calorieTracker.calculateBMR(weight_kg, height_cm, age, true);
+            calorieTracker.calculateBMR(weight_kg, height_cm, age, isMale());
             calorieTracker.calculateDailyTargetCalorie(healthGoal, daysPerWeek, hoursPerDay);
         }
     }
@@ -146,7 +191,7 @@ public class User  {
         validateWeight(weight_kg);
         this.weight_kg = weight_kg;
         if (calorieTracker != null) {
-            calorieTracker.calculateBMR(weight_kg, height_cm, age, true);
+            calorieTracker.calculateBMR(weight_kg, height_cm, age, isMale());
             calorieTracker.calculateDailyTargetCalorie(healthGoal, daysPerWeek, hoursPerDay);
         }
     }
@@ -159,7 +204,7 @@ public class User  {
         validateHeight(height_cm);
         this.height_cm = height_cm;
         if (calorieTracker != null) {
-            calorieTracker.calculateBMR(weight_kg, height_cm, age, true);
+            calorieTracker.calculateBMR(weight_kg, height_cm, age, isMale());
             calorieTracker.calculateDailyTargetCalorie(healthGoal, daysPerWeek, hoursPerDay);
         }
     }
@@ -238,6 +283,7 @@ public class User  {
         System.out.println("User ID          : " + userId);
         System.out.println("Name             : " + name);
         System.out.println("Age              : " + age + " years");
+        System.out.println("Gender           : " + gender);
         System.out.println("Weight           : " + weight_kg + " kg");
         System.out.println("Height           : " + height_cm + " cm");
         System.out.println("Blood Pressure   : " + bp);

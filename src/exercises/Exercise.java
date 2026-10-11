@@ -1,8 +1,5 @@
 package exercises;
 
-/**
- * Abstract base class representing an Exercise.
- */
 public abstract class Exercise {
     protected int exerciseId;
     protected String name;

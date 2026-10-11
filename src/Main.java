@@ -1,17 +1,14 @@
-import goals.*;
-import exercises.*;
-import assigners.*;
-import workouts.*;
-import tracker.*;
-import analytics.*;
-import scheduler.*;
-import models.*;
 import controller.*;
 import exceptions.*;
-import login.Login;
-
+import exercises.*;
+import goals.*;
 import java.util.ArrayList;
 import java.util.List;
+import login.Login;
+import models.*;
+import scheduler.*;
+import tracker.*;
+import workouts.*;
 
 /**
  * Main demonstration class for the Workout Management & Scheduler System.
@@ -33,7 +30,7 @@ public class Main {
 
         HealthGoal weightLossGoal = null;
         try {
-            weightLossGoal = new WeightLossGoal("Weight Loss Goal", 60, 70.0f, 80.0f, 1.0f);
+            weightLossGoal = new WeightLossGoal("Weight Loss Goal", 60, 70.0f, 80.0f);
             weightLossGoal.displayGoal();
             System.out.println("Is Goal Realistic? " + weightLossGoal.isRealisticGoal());
         } catch (Exception e) {
@@ -100,7 +97,7 @@ public class Main {
             WorkoutPlan workoutPlan = controller.createWorkoutPlan(mainUser);
             System.out.println("Successfully generated Workout Plan containing " + workoutPlan.getWorkouts().size() + " workout sessions.");
 
-            ExerciseScheduler scheduler = new ExerciseScheduler(assignedExercises, weightLossGoal.getTargetDays(), mainUser.getDaysPerWeek());
+            ExerciseScheduler scheduler = new ExerciseScheduler(assignedExercises, weightLossGoal.getTargetDays(), mainUser.getDaysPerWeek(), mainUser.getHoursPerDay());
             System.out.println("Daily Exercise Quota: " + scheduler.computeNoOFExercisesperday() + " exercise(s) per day.");
 
             System.out.println("\n--- Initial Scheduled Workout Days ---");
