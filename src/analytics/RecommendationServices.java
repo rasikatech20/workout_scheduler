@@ -133,4 +133,47 @@ public class RecommendationServices {
 
         return rec.toString();
     }
+
+    /**
+     * Recommends additional/supplemental exercises when user has achieved milestone in minimum days
+     * or has remaining days left in their target timeline.
+     */
+    public String getAdditionalExerciseRecommendation(models.User user) {
+        if (user == null) {
+            return "Additional Exercise Recommendation: User profile not available.";
+        }
+
+        WorkoutPerformanceAnalyzer analyzer = new WorkoutPerformanceAnalyzer();
+        float completionRate = analyzer.getCompletionRate(user.getWorkoutHistory());
+
+        assigners.AdditionalExerciseAssigner assigner = new assigners.AdditionalExerciseAssigner();
+        assigner.setExercisesAssigned(user.isHasCardiacProblems(), user.getHealthGoal());
+        java.util.List<exercises.Exercise> additionalExercises = assigner.getExerciseAssigned();
+
+        StringBuilder rec = new StringBuilder();
+        rec.append("=== Supplemental / Additional Exercise Recommendations ===\n");
+
+        if (completionRate >= 75.0f) {
+            rec.append("Status: Target milestone consistency achieved (").append(String.format("%.1f", completionRate)).append("% completion)!\n");
+            rec.append("Advice: You have successfully achieved your target goal in minimum days and have remaining timeline days.\n");
+            rec.append("You can perform the following personalized supplemental exercises to maintain stamina and muscle tone:\n");
+
+            if (additionalExercises.isEmpty()) {
+                rec.append("  + Notice: Due to cardiac considerations, additional high-impact exercises are restricted.\n");
+                rec.append("  + Continue maintaining gentle, steady-state cardio (brisk walking, light cycling) on extra days.");
+            } else {
+                for (exercises.Exercise ex : additionalExercises) {
+                    rec.append("  + ").append(ex.getName()).append(" (")
+                       .append(ex.getDurationMinutes()).append(" mins, ")
+                       .append(ex.getSetsCount()).append(" sets x ")
+                       .append(ex.getRepsCount()).append(" reps)\n");
+                }
+            }
+        } else {
+            rec.append("Status: Primary routine in progress.\n");
+            rec.append("Advice: Focus on completing your primary assigned exercises first before adding supplemental routines.");
+        }
+
+        return rec.toString();
+    }
 }

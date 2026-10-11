@@ -78,15 +78,43 @@ public class WorkoutPerformanceAnalyzer {
             return "Insufficient Data - Minimum 2 logged days required.";
         }
         int size = caloriesPerDay.size();
-        float recent = caloriesPerDay.get(size - 1);
-        float previous = caloriesPerDay.get(size - 2);
-        float diff = recent - previous;
-        if (diff > 20.0f) {
-            return "Increasing Trend (+ " + String.format("%.1f", diff) + " kcal)";
-        } else if (diff < -20.0f) {
-            return "Decreasing Trend (" + String.format("%.1f", diff) + " kcal)";
+        
+        // If we have at least 4 sessions, compare the average of the first half vs second half
+        // to determine a true progression trend over the regimen
+        if (size >= 4) {
+            int mid = size / 2;
+            float firstHalfSum = 0.0f;
+            for (int i = 0; i < mid; i++) {
+                firstHalfSum += caloriesPerDay.get(i);
+            }
+            float firstHalfAvg = firstHalfSum / mid;
+
+            float secondHalfSum = 0.0f;
+            for (int i = mid; i < size; i++) {
+                secondHalfSum += caloriesPerDay.get(i);
+            }
+            float secondHalfAvg = secondHalfSum / (size - mid);
+
+            float diff = secondHalfAvg - firstHalfAvg;
+            if (diff > 15.0f) {
+                return "Increasing Trend (Regimen Avg: +" + String.format("%.1f", diff) + " kcal/session)";
+            } else if (diff < -15.0f) {
+                return "Decreasing Trend (Regimen Avg: " + String.format("%.1f", diff) + " kcal/session)";
+            } else {
+                return "Stable & Consistent Regimen Trend (Avg: " + String.format("%.1f", secondHalfAvg) + " kcal/session)";
+            }
         } else {
-            return "Stable Trend";
+            // For 2-3 sessions, compare the latest session with the previous
+            float recent = caloriesPerDay.get(size - 1);
+            float previous = caloriesPerDay.get(size - 2);
+            float diff = recent - previous;
+            if (diff > 20.0f) {
+                return "Increasing Trend (+ " + String.format("%.1f", diff) + " kcal)";
+            } else if (diff < -20.0f) {
+                return "Decreasing Trend (" + String.format("%.1f", diff) + " kcal)";
+            } else {
+                return "Stable Trend";
+            }
         }
     }
     //most recent best performing day

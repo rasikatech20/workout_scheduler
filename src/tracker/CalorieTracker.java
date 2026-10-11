@@ -114,14 +114,29 @@ public class CalorieTracker {
 
     /**
      * Calculates remaining daily deficit or surplus required to reach dailyTargetCalorie.
-     * Returns dailyTargetCalorie minus the latest logged daily calorie burn.
+     * Computes dailyTargetCalorie minus the average daily calorie burn across logged sessions,
+     * ensuring that a short make-up or single abnormal session doesn't skew daily target assessment.
      */
     public float calculateDailyDeficitOrSurplusToBurn() {
         if (caloriesBurntPerDay.isEmpty()) {
             return dailyTargetCalorie;
         }
-        float lastBurn = caloriesBurntPerDay.get(caloriesBurntPerDay.size() - 1);//recent
-        return dailyTargetCalorie - lastBurn;
+        float avgDailyBurn = getAverageDailyBurn();
+        return dailyTargetCalorie - avgDailyBurn;
+    }
+
+    /**
+     * Calculates the average calories burned per logged session/day.
+     */
+    public float getAverageDailyBurn() {
+        if (caloriesBurntPerDay.isEmpty()) {
+            return 0.0f;
+        }
+        float sum = 0.0f;
+        for (float burn : caloriesBurntPerDay) {
+            sum += burn;
+        }
+        return sum / caloriesBurntPerDay.size();
     }
 
     public float getTotalMissedCalories() {
@@ -149,12 +164,14 @@ public class CalorieTracker {
         System.out.println("Days Logged             : " + caloriesBurntPerDay.size());
         if (!caloriesBurntPerDay.isEmpty()) {
             float lastBurn = caloriesBurntPerDay.get(caloriesBurntPerDay.size() - 1);
+            float avgBurn = getAverageDailyBurn();
             float remaining = calculateDailyDeficitOrSurplusToBurn();
             System.out.println("Latest Daily Burn       : " + String.format("%.1f", lastBurn) + " kcal");
+            System.out.println("Average Daily Burn      : " + String.format("%.1f", avgBurn) + " kcal/session");
             if (remaining > 0) {
-                System.out.println("Remaining Calorie Burn  : " + String.format("%.1f", remaining) + " kcal to hit target");
+                System.out.println("Daily Calorie Deficit   : " + String.format("%.1f", remaining) + " kcal to hit daily target");
             } else {
-                System.out.println("Target Achieved Surplus : " + String.format("%.1f", Math.abs(remaining)) + " kcal over target!");
+                System.out.println("Daily Calorie Surplus   : " + String.format("%.1f", Math.abs(remaining)) + " kcal over daily target!");
             }
         }
     }

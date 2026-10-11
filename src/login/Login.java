@@ -22,13 +22,25 @@ public class Login {
      */
     public User register(String name, int age, float weight_kg, float height_cm, boolean hasCardiacProblems, HealthGoal healthGoal, int daysPerWeek, float hoursPerDay)
             throws InvalidUserDataException, InvalidGoalException {
+        return register(name, age, weight_kg, height_cm, 120.0f, null, hasCardiacProblems, healthGoal, daysPerWeek, hoursPerDay);
+    }
+
+    /**
+     * Overloaded register method taking bp and gender from the user.
+     */
+    public User register(String name, int age, float weight_kg, float height_cm, float bp, String gender,
+                         boolean hasCardiacProblems, HealthGoal healthGoal, int daysPerWeek, float hoursPerDay)
+            throws InvalidUserDataException, InvalidGoalException {
 
         if (name == null || name.trim().isEmpty()) {
             throw new InvalidUserDataException("Name cannot be empty.");
         }
 
         // Validate and create User object
-        User newUser = new User(name, age, weight_kg, height_cm, hasCardiacProblems, healthGoal, daysPerWeek, hoursPerDay);
+        User newUser = new User(name, age, weight_kg, height_cm, hasCardiacProblems, healthGoal, daysPerWeek, hoursPerDay, gender);
+        if (bp > 0.0f) {
+            newUser.setBp(bp);
+        }
 
         // Check if user already exists
         try {
@@ -44,9 +56,11 @@ public class Login {
             String goalName = (healthGoal != null) ? healthGoal.getGoalName() : "General";
             int targetDays = (healthGoal != null) ? healthGoal.getTargetDays() : 30;
             float targetWeight = (healthGoal != null) ? healthGoal.getTargetWeight() : weight_kg;
+            String userGender = (newUser.getGender() != null) ? newUser.getGender() : "unspecified";
 
             String record = name + "," + age + "," + weight_kg + "," + height_cm + "," + hasCardiacProblems
-                    + "," + goalName + "," + targetDays + "," + targetWeight + "," + daysPerWeek + "," + hoursPerDay + "\n";
+                    + "," + goalName + "," + targetDays + "," + targetWeight + "," + daysPerWeek + "," + hoursPerDay
+                    + "," + newUser.getBp() + "," + userGender + "\n";
             writer.write(record);
         } catch (IOException e) {
             throw new InvalidUserDataException("Error writing to file: " + e.getMessage());
@@ -124,7 +138,17 @@ public class Login {
                             ? new WeightGainGoal(goalName, targetDays, targetWeight, weight)
                             : new WeightLossGoal(goalName, targetDays, targetWeight, weight);
 
-                    return new User(p[0], age, weight, height, hasCardiac, goal, daysPerWeek, hoursPerDay);
+                    String gender = (p.length >= 12 && !p[11].trim().equalsIgnoreCase("unspecified")) ? p[11].trim() : null;
+                    User user = new User(p[0], age, weight, height, hasCardiac, goal, daysPerWeek, hoursPerDay, gender);
+                    if (p.length >= 11) {
+                        try {
+                            float bpVal = Float.parseFloat(p[10]);
+                            if (bpVal > 0.0f) {
+                                user.setBp(bpVal);
+                            }
+                        } catch (Exception ignored) {}
+                    }
+                    return user;
                 } catch (Exception e) {
                     return null;
                 }

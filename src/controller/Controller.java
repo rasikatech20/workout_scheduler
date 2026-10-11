@@ -91,15 +91,16 @@ public class Controller {
         report.append(recommendationServices.getStreakBasedRecommendation(activeHistory)).append("\n\n");
         report.append(recommendationServices.getHistoryBasedRecommendation(activeHistory)).append("\n\n");
         report.append(recommendationServices.getCardiacSafeRecommendation(user.isHasCardiacProblems())).append("\n\n");
-        report.append(recommendationServices.getMissedWorkoutRecoveryRecommendation(activeHistory));
+        report.append(recommendationServices.getMissedWorkoutRecoveryRecommendation(activeHistory)).append("\n\n");
+        report.append(recommendationServices.getAdditionalExerciseRecommendation(user));
 
         return report.toString();
     }
 
     /**
-     * Reschedules missed exercises using MissedExerciseRescheduler.
+     * Reschedules missed exercises using MissedExerciseRescheduler and returns make-up workouts.
      */
-    public void rescheduleMissedExercises(User user, int noOfDays, float hoursPerDay) throws InvalidUserDataException {
+    public List<Workout> rescheduleMissedExercises(User user, int noOfDays, float hoursPerDay) throws InvalidUserDataException {
         if (user == null) {
             throw new InvalidUserDataException("Cannot reschedule missed exercises: User instance is null.");
         }
@@ -110,11 +111,41 @@ public class Controller {
         List<Exercise> allMissed = new ArrayList<>();
         if (history != null) {
             for (List<Exercise> sessionMissed : history.getMissedExercises()) {
-                allMissed.addAll(sessionMissed); //addAll function used so adds all elements
+                allMissed.addAll(sessionMissed);
             }
         }
         System.out.println(">>> Rescheduling " + allMissed.size() + " missed exercise(s) for user " + user.getName() + "...");
         missedExerciseRescheduler.rescheduleMissedExercises(allMissed, noOfDays, hoursPerDay);
+        int startId = (history != null ? history.getCompletedExercises().size() + 1 : 1);
+        return missedExerciseRescheduler.getRescheduledWorkouts(allMissed, user.getHealthGoal(), startId);
+    }
+
+    /**
+     * Records the completed and missed exercises of a workout session into user history
+     * and logs the session's burned and missed calories.
+     */
+    public void recordWorkoutSession(User user, Workout workout, float sessionBurnedCalories) {
+        if (user == null || workout == null) return;
+
+        List<Exercise> completed = new ArrayList<>();
+        List<Exercise> missed = new ArrayList<>();
+
+        for (Exercise ex : workout.getExercises()) {
+            if (ex.isComplete()) {
+                completed.add(ex);
+            } else {
+                missed.add(ex);
+                float missedCalories = calorieCalculator.calculateCalories(ex);
+                user.getCalorieTracker().logMissedCalories(missedCalories);
+            }
+        }
+
+        user.getCalorieTracker().logCalorieBurn(sessionBurnedCalories);
+
+        WorkoutHistory history = user.getWorkoutHistory();
+        if (history != null) {
+            history.addWorkoutRecord(completed, missed);
+        }
     }
 
     /**

@@ -103,17 +103,17 @@ public class ExerciseScheduler {
         }
 
         int availableTime = (int) (hoursPerDay * 60);
-        int workoutDays = Math.min(totalWorkoutDays, exercises.size());
-        int perDay = exercises.size() / workoutDays;
-        int extra = exercises.size() % workoutDays;
-        int start = 0;
+        int workoutDays = totalWorkoutDays;
+        int exercisePoolSize = exercises.size();
+        int exerciseIndex = 0;
 
-        for (int day = 0; day < workoutDays && start < exercises.size(); day++) {
+        for (int day = 0; day < workoutDays; day++) {
             List<Exercise> dayExercises = new ArrayList<>();
             int cumulativeTime = 0;
 
-            while (start < exercises.size()) {
-                Exercise ex = exercises.get(start);
+            int attempts = 0;
+            while (attempts < exercisePoolSize) {
+                Exercise ex = exercises.get(exerciseIndex % exercisePoolSize);
                 int duration = ex.getDurationMinutes();
                 int timeNeeded = duration;
 
@@ -127,23 +127,15 @@ public class ExerciseScheduler {
 
                 cumulativeTime += timeNeeded;
                 dayExercises.add(ex);
-                start++;
+                exerciseIndex++;
+                attempts++;
             }
 
             if (dayExercises.isEmpty()) {
-                System.out.println(
-                    "Exercise " + exercises.get(start).getName()
-                    + " cannot fit within the daily time limit."
-                );
                 break;
             }
 
             schedule.add(new Workout(day + 1, healthGoal, dayExercises));
-        }
-
-        if (start < exercises.size()) {
-            System.out.println("Exercises still needing scheduling: "
-                    + (exercises.size() - start));
         }
 
         return schedule;

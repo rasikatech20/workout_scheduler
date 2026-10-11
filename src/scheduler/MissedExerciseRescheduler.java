@@ -116,6 +116,9 @@ public class MissedExerciseRescheduler {
                 index++;
             }
     
+            for (Exercise ex : dayExercises) {
+                ex.setComplete(false);
+            }
             rescheduled.add(new Workout(startWorkoutId + day, healthGoal, dayExercises));
         }
     
