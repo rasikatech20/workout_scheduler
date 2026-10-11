@@ -124,6 +124,45 @@ public class Controller {
     }
 
     /**
+     * Reschedules missed exercises by inspecting a Workout session:
+     * Iterates over exercises: if completed (isComplete()), adds to completed;
+     * otherwise (!isComplete()), adds to missed exercises and reschedules them.
+     */
+    public void rescheduleMissedExercises(User user, Workout workout, int noOfDays, float hoursPerDay) throws InvalidUserDataException {
+        if (user == null) {
+            throw new InvalidUserDataException("Cannot reschedule missed exercises: User instance is null.");
+        }
+        if (workout == null) {
+            throw new InvalidUserDataException("Cannot reschedule missed exercises: Workout instance is null.");
+        }
+        if (noOfDays <= 0 || hoursPerDay <= 0.0f) {
+            throw new InvalidUserDataException("Invalid rescheduling target: noOfDays and hoursPerDay must be greater than zero.");
+        }
+
+        List<Exercise> completed = new ArrayList<>();
+        List<Exercise> missed = new ArrayList<>();
+
+        for (Exercise ex : workout.getExercises()) {
+            if (ex.isComplete()) {
+                completed.add(ex);
+            } else {
+                missed.add(ex);
+                float missedCalories = calorieCalculator.calculateCalories(ex);
+                user.getCalorieTracker().logMissedCalories(missedCalories);
+            }
+        }
+
+        WorkoutHistory history = user.getWorkoutHistory();
+        if (history != null) {
+            history.addWorkoutRecord(completed, missed);
+        }
+
+        System.out.println(">>> Session logged to history: " + completed.size() + " completed, " + missed.size() + " missed.");
+        System.out.println(">>> Rescheduling " + missed.size() + " missed exercise(s) for user " + user.getName() + "...");
+        missedExerciseRescheduler.rescheduleMissedExercises(missed, noOfDays, hoursPerDay);
+    }
+
+    /**
      * Marks an exercise as completed in a Workout session and logs calculated calories into CalorieTracker.
      */
     public void completeExercise(Workout workout, int exerciseId) {

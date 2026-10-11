@@ -8,13 +8,14 @@ import scheduler.*;
 import models.*;
 import controller.*;
 import exceptions.*;
+import login.Login;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Main demonstration class for the Workout Management & Scheduler System.
- * Demonstrates system operations with robust try-catch exception handling.
+ * Demonstrates user registration, BufferedReader/FileReader authentication, and login tracking via Login.
  */
 public class Main {
     public static void main(String[] args) {
@@ -23,11 +24,12 @@ public class Main {
         System.out.println("==================================================================\n");
 
         Controller controller = new Controller();
+        Login authSystem = new Login();
 
         // ------------------------------------------------------------------
-        // 1. HEALTH GOAL & USER PROFILE SETUP WITH VALIDATION
+        // 1. HEALTH GOAL & READER/WRITER USER REGISTRATION / AUTHENTICATION
         // ------------------------------------------------------------------
-        System.out.println(">>> 1. USER REGISTRATION & HEALTH GOAL SETUP <<<\n");
+        System.out.println(">>> 1. HEALTH GOAL SETUP & READER/WRITER AUTHENTICATION <<<\n");
 
         HealthGoal weightLossGoal = null;
         try {
@@ -40,29 +42,44 @@ public class Main {
 
         System.out.println();
 
-        // Demonstration of user registration error handling (Invalid input attempt)
+        // Demonstration of validation error handling during registration
         try {
-            System.out.println("Validating user registration details for new account...");
-            // Attempting to register user with invalid age
-            User invalidUser = new User("John Doe", -5, 75.0f, 175.0f, weightLossGoal, 4, 1.5f);
+            System.out.println("Attempting user registration with invalid input...");
+            authSystem.register("John Doe", -5, 75.0f, 175.0f, false, weightLossGoal, 4, 1.5f);
         } catch (InvalidUserDataException e) {
             System.out.println("Registration Validation Notice: " + e.getMessage());
         } catch (InvalidGoalException e) {
-            System.out.println("Goal Validation Notice: " + e.getMessage());
+            System.out.println("Goal Notice: " + e.getMessage());
         }
 
         System.out.println();
 
-        // Registering a valid user profile
-        User mainUser = null;
+        // Registering a new user and storing User data to file using FileWriter & BufferedWriter
         try {
-            System.out.println("Registering user profile...");
-            mainUser = new User("Sai Saranya", 22, 65.0f, 168.0f, false, weightLossGoal, 5, 1.5f);
-            mainUser.displayUserProfile();
-        } catch (WorkoutSchedulerException e) {
-            System.err.println("User profile registration failed: " + e.getMessage());
+            System.out.println("Registering user profile to text file database using BufferedWriter...");
+            authSystem.register("Sai Saranya", 22, 65.0f, 168.0f, false, weightLossGoal, 5, 1.5f);
+        } catch (InvalidUserDataException e) {
+            System.err.println("Registration failed: " + e.getMessage());
+            return;
+        } catch (InvalidGoalException e) {
+            System.err.println("Registration failed: " + e.getMessage());
             return;
         }
+
+        System.out.println();
+
+        // Validating and authenticating user from file using BufferedReader & FileReader
+        User mainUser = null;
+        try {
+            System.out.println("Authenticating user 'Sai Saranya' by reading from file using BufferedReader...");
+            mainUser = authSystem.authenticate("Sai Saranya");
+            mainUser.displayUserProfile();
+        } catch (LoginFailedException e) {
+            System.err.println("Authentication failed: " + e.getMessage());
+            return;
+        }
+
+        System.out.println("\nTotal Successful User Logins Recorded: " + authSystem.noOfUserLogins());
 
         System.out.println("\n------------------------------------------------------------------\n");
 
@@ -105,8 +122,8 @@ public class Main {
         // ------------------------------------------------------------------
         System.out.println(">>> 3. WORKOUT SESSION TRACKING & COMPLETION <<<\n");
 
+        Workout currentSession = new Workout(101, weightLossGoal, assignedExercises);
         try {
-            Workout currentSession = new Workout(101, weightLossGoal, assignedExercises);
             System.out.println("Active Session ID: " + currentSession.getWorkoutId());
 
             if (!assignedExercises.isEmpty()) {
@@ -133,19 +150,7 @@ public class Main {
         System.out.println(">>> 4. MISSED EXERCISE RESCHEDULING & HISTORY LOGGING <<<\n");
 
         try {
-            WorkoutHistory history = mainUser.getWorkoutHistory();
-
-            List<Exercise> completed = new ArrayList<>();
-            List<Exercise> missed = new ArrayList<>();
-            if (assignedExercises.size() > 0) completed.add(assignedExercises.get(0));
-            if (assignedExercises.size() > 1) {
-                Exercise missedEx = assignedExercises.get(1);
-                missed.add(missedEx);
-                mainUser.getCalorieTracker().logMissedCalories(missedEx.getCalculatedCalories());
-            }
-            history.addWorkoutRecord(completed, missed);
-
-            controller.rescheduleMissedExercises(mainUser, 3, 1.5f);
+            controller.rescheduleMissedExercises(mainUser, currentSession, 3, 1.5f);
         } catch (InvalidUserDataException e) {
             System.err.println("Rescheduling error: " + e.getMessage());
         }
