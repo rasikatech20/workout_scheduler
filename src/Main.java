@@ -1,8 +1,10 @@
 import analytics.WorkoutPerformanceAnalyzer;
 import controller.Controller;
+import exceptions.CardiacRiskException;
 import exceptions.InvalidGoalException;
 import exceptions.InvalidUserDataException;
 import exceptions.LoginFailedException;
+import exceptions.UnrealisticGoalException;
 import exercises.Exercise;
 import goals.HealthGoal;
 import goals.WeightGainGoal;
@@ -15,11 +17,6 @@ import workouts.Workout;
 import workouts.WorkoutHistory;
 import workouts.WorkoutPlan;
 
-/**
- * Clean UI / Presentation entry point for the Workout Management & Scheduler System.
- * Main only handles user prompts and coordinates method calls to Controller and Login.
- * All domain logic resides in Controller, ExerciseScheduler, CalorieTracker, and RecommendationServices.
- */
 public class Main {
     private static Scanner scanner = new Scanner(System.in);
 
@@ -80,7 +77,7 @@ public class Main {
         User currentUser = null;
 
         if (authChoice == 1) {
-            String loginName = promptString("Enter username to login (default 'Sai Saranya'): ", "Sai Saranya");
+            String loginName = promptString("Enter username to login (default 'Rasika'): ", "Rasika");
             try {
                 System.out.println("Authenticating '" + loginName + "' using Login service...");
                 currentUser = authSystem.authenticate(loginName);
@@ -104,37 +101,53 @@ public class Main {
             String cardiacInput = promptString("Do you have any cardiac / heart conditions? (y/n, default n): ", "n");
             boolean hasCardiac = cardiacInput.equalsIgnoreCase("y") || cardiacInput.equalsIgnoreCase("yes");
 
-            System.out.println("\nSelect Health Goal:");
-            System.out.println("  [1] Weight Loss Goal");
-            System.out.println("  [2] Weight Gain Goal");
-            int goalChoice = promptInt("Enter goal choice (1/2, default 1): ", 1);
+            HealthGoal userGoal = null;
+            boolean goalConfigured = false;
 
-            float targetWeight = (goalChoice == 2)
-                ? promptFloat("Enter Target Weight in kg (default " + (weight + 5.0f) + "): ", weight + 5.0f)
-                : promptFloat("Enter Target Weight in kg (default " + (weight - 5.0f) + "): ", weight - 5.0f);
+            while (!goalConfigured) {
+                System.out.println("\nSelect Health Goal:");
+                System.out.println("  [1] Weight Loss Goal");
+                System.out.println("  [2] Weight Gain Goal");
+                int goalChoice = promptInt("Enter goal choice (1/2, default 1): ", 1);
 
-            int targetDays = promptInt("Enter Target Duration in days (e.g. 30, 45, 60, default 45): ", 45);
+                float targetWeight = (goalChoice == 2)
+                    ? promptFloat("Enter Target Weight in kg (default " + (weight + 5.0f) + "): ", weight + 5.0f)
+                    : promptFloat("Enter Target Weight in kg (default " + (weight - 5.0f) + "): ", weight - 5.0f);
 
-            HealthGoal userGoal = (goalChoice == 2)
-                ? new WeightGainGoal("Weight Gain Goal", targetDays, targetWeight, weight)
-                : new WeightLossGoal("Weight Loss Goal", targetDays, targetWeight, weight);
+                int targetDays = promptInt("Enter Target Duration in days (e.g. 30, 45, 60, default 45): ", 45);
 
-            userGoal.displayGoal();
-            if (!userGoal.isRealisticGoal()) {
-                System.out.println("\n>>> WARNING: Aggressive or Unrealistic Goal Detected! <<<");
-                float diff = Math.abs(weight - targetWeight);
-                float maxSafeRate = (goalChoice == 2) ? 1.0f : 1.5f;
-                int recommendedDays = (int) Math.ceil((diff / maxSafeRate) * 7.0f);
-                System.out.println("Recommended target duration for " + diff + " kg change: At least " + recommendedDays + " days.");
-
-                String adjust = promptString("Would you like to adjust target duration to a realistic " + recommendedDays + " days? (y/n, default y): ", "y");
-                if (adjust.equalsIgnoreCase("y") || adjust.equalsIgnoreCase("yes")) {
-                    targetDays = recommendedDays;
+                try {
                     userGoal = (goalChoice == 2)
                         ? new WeightGainGoal("Weight Gain Goal", targetDays, targetWeight, weight)
                         : new WeightLossGoal("Weight Loss Goal", targetDays, targetWeight, weight);
-                    System.out.println("Goal updated successfully to a realistic timeline!");
+
                     userGoal.displayGoal();
+
+                    if (!userGoal.isRealisticGoal()) {
+                        System.out.println("\n>>> WARNING: Aggressive or Unrealistic Goal Detected! <<<");
+                        float diff = Math.abs(weight - targetWeight);
+                        float maxSafeRate = (goalChoice == 2) ? 1.0f : 1.5f;
+                        int recommendedDays = (int) Math.ceil((diff / maxSafeRate) * 7.0f);
+                        System.out.println("Recommended target duration for " + diff + " kg change: At least " + recommendedDays + " days.");
+
+                        String adjust = promptString("Would you like to adjust target duration to a realistic " + recommendedDays + " days? (y/n, default y): ", "y");
+                        if (adjust.equalsIgnoreCase("y") || adjust.equalsIgnoreCase("yes")) {
+                            targetDays = recommendedDays;
+                            userGoal = (goalChoice == 2)
+                                ? new WeightGainGoal("Weight Gain Goal", targetDays, targetWeight, weight)
+                                : new WeightLossGoal("Weight Loss Goal", targetDays, targetWeight, weight);
+                            System.out.println("Goal updated successfully to a realistic timeline!");
+                            userGoal.displayGoal();
+                        } else {
+                            throw new UnrealisticGoalException("Target duration of " + targetDays + " days is too aggressive for a " 
+                                                               + diff + " kg change (exceeds safe rate of " + maxSafeRate + " kg/week).");
+                        }
+                    }
+
+                    goalConfigured = true;
+                } catch (UnrealisticGoalException e) {
+                    System.err.println("\n>>> UNREALISTIC GOAL REJECTED: " + e.getMessage() + " <<<");
+                    System.out.println("The system cannot proceed with medically unsafe goals. Please re-enter a proper target.");
                 }
             }
 
@@ -177,6 +190,10 @@ public class Main {
             workoutPlan = controller.createWorkoutPlan(currentUser);
         } catch (InvalidUserDataException e) {
             System.err.println("Error generating plan: " + e.getMessage());
+            return;
+        } catch (CardiacRiskException e) {
+            System.err.println("\n>>> CARDIAC SAFETY ALERT: " + e.getMessage() + " <<<");
+            System.err.println("Plan generation halted to safeguard user health. Please consult your physician.");
             return;
         }
 
@@ -235,6 +252,7 @@ public class Main {
             int sessionCompletedCount = 0;
 
             for (Exercise ex : currentSession.getExercises()) {
+                ex.setComplete(false); // Reset session completion state for reused exercise instances
                 boolean completed = true;
                 if (interactiveSimulation) {
                     String answer = promptString("Did you complete '" + ex.getName() + "' (" 
@@ -297,6 +315,7 @@ public class Main {
 
                         float makeupBurn = 0.0f;
                         for (Exercise ex : makeupWorkout.getExercises()) {
+                            ex.setComplete(false);
                             String ans = promptString("Did you complete make-up exercise '" + ex.getName() 
                                                       + "' (" + ex.getDurationMinutes() + " mins)? (y/n, default y): ", "y");
                             if (ans.equalsIgnoreCase("y") || ans.equalsIgnoreCase("yes")) {
@@ -356,6 +375,19 @@ public class Main {
             System.out.println(recommendations);
         } catch (InvalidUserDataException e) {
             System.err.println("Recommendation generation error: " + e.getMessage());
+        }
+
+        // ------------------------------------------------------------------
+        // 7. WORKOUT HISTORY RESET / ARCHIVAL OPTION
+        // ------------------------------------------------------------------
+        System.out.println("\n------------------------------------------------------------------");
+        System.out.println("                 WORKOUT HISTORY RESET OPTION                     ");
+        System.out.println("------------------------------------------------------------------");
+        String clearChoice = promptString("Would you like to reset/clear workout history for the next cycle? (y/n, default n): ", "n");
+        if (clearChoice.equalsIgnoreCase("y") || clearChoice.equalsIgnoreCase("yes")) {
+            controller.clearWorkoutHistory(currentUser);
+            System.out.println("Active workout sessions cleared. Total tracked sessions now: " 
+                               + currentUser.getWorkoutHistory().getCompletedExercises().size());
         }
 
         System.out.println("\n==================================================================");

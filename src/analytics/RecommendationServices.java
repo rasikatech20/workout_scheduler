@@ -1,5 +1,9 @@
 package analytics;
 
+import assigners.AdditionalExerciseAssigner;
+import exercises.Exercise;
+import java.util.List;
+import models.User;
 import tracker.CalorieTracker;
 import workouts.WorkoutHistory;
 
@@ -138,7 +142,7 @@ public class RecommendationServices {
      * Recommends additional/supplemental exercises when user has achieved milestone in minimum days
      * or has remaining days left in their target timeline.
      */
-    public String getAdditionalExerciseRecommendation(models.User user) {
+    public String getAdditionalExerciseRecommendation(User user) {
         if (user == null) {
             return "Additional Exercise Recommendation: User profile not available.";
         }
@@ -146,9 +150,9 @@ public class RecommendationServices {
         WorkoutPerformanceAnalyzer analyzer = new WorkoutPerformanceAnalyzer();
         float completionRate = analyzer.getCompletionRate(user.getWorkoutHistory());
 
-        assigners.AdditionalExerciseAssigner assigner = new assigners.AdditionalExerciseAssigner();
+        AdditionalExerciseAssigner assigner = new AdditionalExerciseAssigner();
         assigner.setExercisesAssigned(user.isHasCardiacProblems(), user.getHealthGoal());
-        java.util.List<exercises.Exercise> additionalExercises = assigner.getExerciseAssigned();
+        List<Exercise> additionalExercises = assigner.getExerciseAssigned();
 
         StringBuilder rec = new StringBuilder();
         rec.append("=== Supplemental / Additional Exercise Recommendations ===\n");
@@ -162,7 +166,7 @@ public class RecommendationServices {
                 rec.append("  + Notice: Due to cardiac considerations, additional high-impact exercises are restricted.\n");
                 rec.append("  + Continue maintaining gentle, steady-state cardio (brisk walking, light cycling) on extra days.");
             } else {
-                for (exercises.Exercise ex : additionalExercises) {
+                for (Exercise ex : additionalExercises) {
                     rec.append("  + ").append(ex.getName()).append(" (")
                        .append(ex.getDurationMinutes()).append(" mins, ")
                        .append(ex.getSetsCount()).append(" sets x ")

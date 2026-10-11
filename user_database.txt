@@ -2,3 +2,5 @@ Sai Saranya,22,65.0,168.0,false,Weight Loss Goal,60,70.0,5,1.5
 Rasika Test,20,62.0,168.0,false,Weight Loss Goal,33,55.0,3,1.5
 Vikash,18,70.0,173.0,true,Weight Loss Goal,24,65.0,3,2.0
 rasika,18,62.0,169.0,false,Weight Loss Goal,9,60.0,2,3.0,110.0,female
+sathya,18,65.0,165.0,false,Weight Loss Goal,24,60.0,5,2.0,120.0,female
+TestUser,25,70.0,175.0,false,Weight Loss Goal,25,65.0,4,4.0,120.0,male

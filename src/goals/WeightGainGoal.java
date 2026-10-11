@@ -54,15 +54,7 @@ public class WeightGainGoal extends HealthGoal {
             return false;
         }
 
-        if (weeklyGainRate > 1.0f) {
-            return false;
-        }
-
-        float totalWeightToGain = targetWeight - currentWeight;
-        float weeksAvailable = targetDays / 7.0f;
-        float requiredWeeklyRate = totalWeightToGain / weeksAvailable;
-
-        return requiredWeeklyRate <= 1.0f;
+        return weeklyGainRate <= 1.0f;
     }
 
     @Override

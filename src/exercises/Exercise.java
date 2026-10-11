@@ -78,4 +78,5 @@ public abstract class Exercise {
     public abstract void displayExercise();
     public abstract float calculateCaloriesBurned();
     public abstract int recalculateDuration(float bp, float intensityLevel);
+    public abstract float getIntensityLevel();
 }

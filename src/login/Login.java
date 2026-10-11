@@ -18,15 +18,7 @@ public class Login {
     private static int loginCount = 0;
 
     /**
-     * Registers a new user and appends to user_database.txt using FileWriter.
-     */
-    public User register(String name, int age, float weight_kg, float height_cm, boolean hasCardiacProblems, HealthGoal healthGoal, int daysPerWeek, float hoursPerDay)
-            throws InvalidUserDataException, InvalidGoalException {
-        return register(name, age, weight_kg, height_cm, 120.0f, null, hasCardiacProblems, healthGoal, daysPerWeek, hoursPerDay);
-    }
-
-    /**
-     * Overloaded register method taking bp and gender from the user.
+     * Registers a new user with complete profile data and appends to user_database.txt using FileWriter.
      */
     public User register(String name, int age, float weight_kg, float height_cm, float bp, String gender,
                          boolean hasCardiacProblems, HealthGoal healthGoal, int daysPerWeek, float hoursPerDay)
@@ -37,18 +29,11 @@ public class Login {
         }
 
         // Validate and create User object
-        User newUser = new User(name, age, weight_kg, height_cm, hasCardiacProblems, healthGoal, daysPerWeek, hoursPerDay, gender);
-        if (bp > 0.0f) {
-            newUser.setBp(bp);
-        }
+        User newUser = new User(name, age, weight_kg, height_cm, bp, gender, hasCardiacProblems, healthGoal, daysPerWeek, hoursPerDay);
 
         // Check if user already exists
-        try {
-            if (findUser(name) != null) {
-                throw new InvalidUserDataException("User '" + name + "' already exists. Please authenticate.");
-            }
-        } catch (FileNotFoundException e) {
-            // Database file does not exist yet; this is fine for first registration.
+        if (findUser(name) != null) {
+            throw new InvalidUserDataException("User '" + name + "' already exists. Please authenticate.");
         }
 
         // Append user to file using FileWriter
@@ -79,18 +64,14 @@ public class Login {
             throw new LoginFailedException("Name cannot be empty.");
         }
 
-        try {
-            User user = findUser(name);
-            if (user == null) {
-                throw new LoginFailedException("User '" + name + "' not found.");
-            }
-
-            loginCount++;
-            System.out.println("User '" + name + "' authenticated successfully.");
-            return user;
-        } catch (FileNotFoundException e) {
-            throw new LoginFailedException("User database file not found: " + FILE_NAME);
+        User user = findUser(name);
+        if (user == null) {
+            throw new LoginFailedException("User '" + name + "' not found.");
         }
+
+        loginCount++;
+        System.out.println("User '" + name + "' authenticated successfully.");
+        return user;
     }
 
     /**
@@ -101,10 +82,10 @@ public class Login {
     }
 
     //to read user_database.txt using FileReader
-    private User findUser(String name) throws FileNotFoundException {
+    private User findUser(String name) {
         File file = new File(FILE_NAME);
         if (!file.exists()) {
-            throw new FileNotFoundException("User database file not found: " + FILE_NAME);
+            return null;
         }
 
         StringBuilder sb = new StringBuilder();
@@ -139,15 +120,16 @@ public class Login {
                             : new WeightLossGoal(goalName, targetDays, targetWeight, weight);
 
                     String gender = (p.length >= 12 && !p[11].trim().equalsIgnoreCase("unspecified")) ? p[11].trim() : null;
-                    User user = new User(p[0], age, weight, height, hasCardiac, goal, daysPerWeek, hoursPerDay, gender);
+                    float bpVal = 120.0f;
                     if (p.length >= 11) {
                         try {
-                            float bpVal = Float.parseFloat(p[10]);
-                            if (bpVal > 0.0f) {
-                                user.setBp(bpVal);
+                            float parsedBp = Float.parseFloat(p[10]);
+                            if (parsedBp > 0.0f) {
+                                bpVal = parsedBp;
                             }
                         } catch (Exception ignored) {}
                     }
+                    User user = new User(p[0], age, weight, height, bpVal, gender, hasCardiac, goal, daysPerWeek, hoursPerDay);
                     return user;
                 } catch (Exception e) {
                     return null;

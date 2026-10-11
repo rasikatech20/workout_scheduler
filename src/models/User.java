@@ -24,23 +24,14 @@ public class User  {
 
     private static int idCounter = 1001;
 
-    public User(String name, int age, float weight_kg, float height_cm, HealthGoal healthGoal, int daysPerWeek, float hoursPerDay)
-            throws InvalidUserDataException, InvalidGoalException {
-        this(name, age, weight_kg, height_cm, false, healthGoal, daysPerWeek, hoursPerDay, null);
-    }
-
-    public User(String name, int age, float weight_kg, float height_cm, boolean hasCardiacProblems, HealthGoal healthGoal, int daysPerWeek, float hoursPerDay)
-            throws InvalidUserDataException, InvalidGoalException {
-        this(name, age, weight_kg, height_cm, hasCardiacProblems, healthGoal, daysPerWeek, hoursPerDay, null);
-    }
-
-    public User(String name, int age, float weight_kg, float height_cm, boolean hasCardiacProblems, HealthGoal healthGoal,
-                int daysPerWeek, float hoursPerDay, String gender)
+    public User(String name, int age, float weight_kg, float height_cm, float bp, String gender,
+                boolean hasCardiacProblems, HealthGoal healthGoal, int daysPerWeek, float hoursPerDay)
             throws InvalidUserDataException, InvalidGoalException {
         validateName(name);
         validateAge(age);
         validateWeight(weight_kg);
         validateHeight(height_cm);
+        validateBp(bp);
         validateHealthGoal(healthGoal);
         validateDaysPerWeek(daysPerWeek);
         validateHoursPerDay(hoursPerDay);
@@ -51,7 +42,7 @@ public class User  {
         this.age = age;
         this.weight_kg = weight_kg;
         this.height_cm = height_cm;
-        this.bp = 120.0f;
+        this.bp = bp;
         this.gender = normalizeGender(gender);
         this.hasCardiacProblems = hasCardiacProblems;
         this.healthGoal = healthGoal;

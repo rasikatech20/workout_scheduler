@@ -13,11 +13,10 @@ import java.util.List;
 /**
  * Assigns additional/supplemental exercises matching the user's HealthGoal and cardiac status.
  */
-public class AdditionalExerciseAssigner implements ExerciseAssigner {
-    private List<Exercise> suitableExercises;
+public class AdditionalExerciseAssigner extends ExerciseAssigner {
 
     public AdditionalExerciseAssigner() {
-        this.suitableExercises = new ArrayList<>();
+        super();
     }
 
     @Override
@@ -51,10 +50,5 @@ public class AdditionalExerciseAssigner implements ExerciseAssigner {
                 }
             }
         }
-    }
-
-    @Override
-    public List<Exercise> getExerciseAssigned() {
-        return new ArrayList<>(suitableExercises);
     }
 }

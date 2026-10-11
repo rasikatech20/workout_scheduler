@@ -3,6 +3,7 @@ package controller;
 import analytics.RecommendationServices;
 import assigners.ExerciseAssigner;
 import assigners.RegularExerciseAssigner;
+import exceptions.CardiacRiskException;
 import exceptions.InvalidUserDataException;
 import exercises.Exercise;
 import java.util.ArrayList;
@@ -47,20 +48,49 @@ public class Controller {
     }
 
     /**
-     * Assigns exercises to user based on user's cardiac status and health goal.
+     * Clears the workout history logs for the given user.
      */
-    public List<Exercise> assignExercises(User user) throws InvalidUserDataException {
+    public void clearWorkoutHistory(User user) {
+        if (user != null && user.getWorkoutHistory() != null) {
+            user.getWorkoutHistory().clearHistory(user.getUserId());
+            System.out.println("Workout history successfully reset for User ID " + user.getUserId() + " (" + user.getName() + ").");
+        }
+    }
+
+    /**
+     * Assigns exercises to user based on user's cardiac status and health goal.
+     * Throws CardiacRiskException if high-intensity exercise reaches a cardiac user.
+     */
+    public List<Exercise> assignExercises(User user) throws InvalidUserDataException, CardiacRiskException {
         if (user == null) {
             throw new InvalidUserDataException("Cannot assign exercises: User instance is null.");
         }
         exerciseAssigner.setExercisesAssigned(user.isHasCardiacProblems(), user.getHealthGoal());
-        return exerciseAssigner.getExerciseAssigned();
+        List<Exercise> assigned = exerciseAssigner.getExerciseAssigned();
+
+        // Recalculate duration & intensity dynamically based on user Blood Pressure
+        if (assigned != null && user.getBp() > 120.0f) {
+            for (Exercise ex : assigned) {
+                ex.recalculateDuration(user.getBp(), ex.getIntensityLevel());
+            }
+        }
+
+        // Safety verification: Ensure no high-intensity exercise reaches a cardiac user
+        if (user.isHasCardiacProblems() && assigned != null) {
+            for (Exercise ex : assigned) {
+                if (ex.getIntensityLevel() > 5.0f) {
+                    throw new CardiacRiskException("'" + ex.getName() + "' is too intense for a user with cardiac conditions.");
+                }
+            }
+        }
+
+        return assigned;
     }
 
     /**
      * Creates a WorkoutPlan for the user by assigning exercises and scheduling them over user target days.
      */
-    public WorkoutPlan createWorkoutPlan(User user) throws InvalidUserDataException {
+    public WorkoutPlan createWorkoutPlan(User user) throws InvalidUserDataException, CardiacRiskException {
         if (user == null) {
             throw new InvalidUserDataException("Cannot create workout plan: User instance is null.");
         }
@@ -68,6 +98,18 @@ public class Controller {
         int targetDays = user.getHealthGoal() != null ? user.getHealthGoal().getTargetDays() : 30;
         this.exerciseScheduler = new ExerciseScheduler(assigned, targetDays, user.getDaysPerWeek(), user.getHoursPerDay());
         List<Workout> workouts = exerciseScheduler.getWorkoutSchedule(user.getHealthGoal());
+
+        // Workout-level safety check when workouts are built
+        if (user.isHasCardiacProblems() && workouts != null) {
+            for (Workout workout : workouts) {
+                for (Exercise ex : workout.getExercises()) {
+                    if (ex.getIntensityLevel() > 5.0f) {
+                        throw new CardiacRiskException("'" + ex.getName() + "' is too intense for a user with cardiac conditions.");
+                    }
+                }
+            }
+        }
+
         return new WorkoutPlan(workouts);
     }
 
@@ -149,58 +191,16 @@ public class Controller {
     }
 
     /**
-     * Reschedules missed exercises by inspecting a Workout session:
-     * Iterates over exercises: if completed (isComplete()), adds to completed;
-     * otherwise (!isComplete()), adds to missed exercises and reschedules them.
-     */
-    public void rescheduleMissedExercises(User user, Workout workout, int noOfDays, float hoursPerDay) throws InvalidUserDataException {
-        if (user == null) {
-            throw new InvalidUserDataException("Cannot reschedule missed exercises: User instance is null.");
-        }
-        if (workout == null) {
-            throw new InvalidUserDataException("Cannot reschedule missed exercises: Workout instance is null.");
-        }
-        if (noOfDays <= 0 || hoursPerDay <= 0.0f) {
-            throw new InvalidUserDataException("Invalid rescheduling target: noOfDays and hoursPerDay must be greater than zero.");
-        }
-
-        List<Exercise> completed = new ArrayList<>();
-        List<Exercise> missed = new ArrayList<>();
-
-        for (Exercise ex : workout.getExercises()) {
-            if (ex.isComplete()) {
-                completed.add(ex);
-            } else {
-                missed.add(ex);
-                float missedCalories = calorieCalculator.calculateCalories(ex);
-                user.getCalorieTracker().logMissedCalories(missedCalories);
-            }
-        }
-
-        WorkoutHistory history = user.getWorkoutHistory();
-        if (history != null) {
-            history.addWorkoutRecord(completed, missed);
-        }
-
-        System.out.println(">>> Session logged to history: " + completed.size() + " completed, " + missed.size() + " missed.");
-        System.out.println(">>> Rescheduling " + missed.size() + " missed exercise(s) for user " + user.getName() + "...");
-        missedExerciseRescheduler.rescheduleMissedExercises(missed, noOfDays, hoursPerDay);
-    }
-
-    /**
      * Marks an exercise as completed in a Workout session and logs calculated calories into CalorieTracker.
      */
     public void completeExercise(Workout workout, int exerciseId) {
         if (workout == null) return;
-        for (Exercise ex : workout.getExercises()) {
-            if (ex.getExerciseId() == exerciseId) {
-                ex.setComplete(true);
-                float burned = calorieCalculator.calculateCalories(ex);
-                calorieTracker.logCalorieBurn(burned);
-                System.out.println("Exercise '" + ex.getName() + "' (ID: " + exerciseId + ") completed! Logged " 
-                                   + String.format("%.1f", burned) + " kcal into CalorieTracker.");
-                break;
-            }
+        Exercise completed = workout.markCompletedExercise(exerciseId);
+        if (completed != null) {
+            float burned = calorieCalculator.calculateCalories(completed);
+            calorieTracker.logCalorieBurn(burned);
+            System.out.println("Exercise '" + completed.getName() + "' (ID: " + exerciseId + ") completed! Logged " 
+                               + String.format("%.1f", burned) + " kcal into CalorieTracker.");
         }
     }
 }

@@ -1,5 +1,6 @@
 package workouts;
 
+import exceptions.CardiacRiskException;
 import exercises.Exercise;
 import goals.HealthGoal;
 import java.util.ArrayList;
@@ -65,13 +66,27 @@ public class Workout {
         }
     }
 
-    public void markCompletedExercise(int exerciseId) { //to mark an exercise of this workout as completed
+    /**
+     * Overloaded method to add an exercise with cardiac safety check.
+     */
+    public void addExercise(Exercise exercise, boolean hasCardiacProblems) throws CardiacRiskException {
+        if (exercise != null) {
+            if (hasCardiacProblems && exercise.getIntensityLevel() > 5.0f) {
+                throw new CardiacRiskException("'" + exercise.getName() + "' is too intense for a user with cardiac conditions.");
+            }
+            this.exercises.add(exercise);
+            calculateWorkoutDuration();
+        }
+    }
+
+    public Exercise markCompletedExercise(int exerciseId) { //to mark an exercise of this workout as completed
         for (Exercise exercise : exercises) {
             if (exercise.getExerciseId() == exerciseId) {
                 exercise.setComplete(true);
-                break;
+                return exercise;
             }
         }
+        return null;
     }
 
     public void calculateWorkoutDuration() {

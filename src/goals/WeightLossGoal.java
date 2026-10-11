@@ -54,15 +54,7 @@ public class WeightLossGoal extends HealthGoal {
             return false;
         }
 
-        if (weeklyLossRate > 1.5f) {
-            return false;
-        }
-
-        float totalWeightToLose = currentWeight - targetWeight;
-        float weeksAvailable = targetDays / 7.0f;
-        float requiredWeeklyRate = totalWeightToLose / weeksAvailable;
-
-        return requiredWeeklyRate <= 1.5f;
+        return weeklyLossRate <= 1.5f;
     }
 
     @Override
