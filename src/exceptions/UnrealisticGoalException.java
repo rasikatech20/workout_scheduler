@@ -8,4 +8,9 @@ public class UnrealisticGoalException extends Exception {
     public UnrealisticGoalException(String message) {
         super(message);
     }
+    public String toString()
+    {    
+        return "Goal is unachievable! pls try another goal ";
+    }
+
 }
