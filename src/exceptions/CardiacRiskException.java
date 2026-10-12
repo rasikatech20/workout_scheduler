@@ -7,4 +7,8 @@ public class CardiacRiskException extends Exception {
     public CardiacRiskException(String message) {
         super(message);
     }
+    public String toString()
+    {    
+        return "Patient cannot be assigned high intense exercies";
+    }
 }
