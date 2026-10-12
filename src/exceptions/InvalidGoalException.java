@@ -7,4 +7,9 @@ public class InvalidGoalException extends Exception {
     public InvalidGoalException(String message) {
         super(message);
     }
+    public String toString()
+    {    
+        return "goal cannot be null";
+    }
+
 }
