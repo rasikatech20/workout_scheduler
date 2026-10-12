@@ -4,3 +4,8 @@ Vikash,18,70.0,173.0,true,Weight Loss Goal,24,65.0,3,2.0
 rasika,18,62.0,169.0,false,Weight Loss Goal,9,60.0,2,3.0,110.0,female
 sathya,18,65.0,165.0,false,Weight Loss Goal,24,60.0,5,2.0,120.0,female
 TestUser,25,70.0,175.0,false,Weight Loss Goal,25,65.0,4,4.0,120.0,male
+vikashsekar,19,82.0,183.0,true,Weight Gain Goal,14,80.0,6,2.0,130.0,male
+narayana,19,70.0,170.0,false,Weight Gain Goal,35,75.0,4,3.0,120.0,male
+hansika,18,62.0,170.0,false,Weight Loss Goal,7,61.0,3,3.0,120.0,female
+venk,40,70.0,170.0,false,Weight Loss Goal,5,69.0,2,3.0,120.0,male
+venkat,20,70.0,170.0,false,Weight Loss Goal,4,69.0,3,3.0,120.0,male

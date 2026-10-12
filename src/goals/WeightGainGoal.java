@@ -54,7 +54,7 @@ public class WeightGainGoal extends HealthGoal {
             return false;
         }
 
-        return weeklyGainRate <= 1.0f;
+        return weeklyGainRate <= 2.0f;
     }
 
     @Override

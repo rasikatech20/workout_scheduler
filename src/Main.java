@@ -126,7 +126,7 @@ public class Main {
                     if (!userGoal.isRealisticGoal()) {
                         System.out.println("\n>>> WARNING: Aggressive or Unrealistic Goal Detected! <<<");
                         float diff = Math.abs(weight - targetWeight);
-                        float maxSafeRate = (goalChoice == 2) ? 1.0f : 1.5f;
+                        float maxSafeRate = (goalChoice == 2) ? 1.0f : 2.0f;
                         int recommendedDays = (int) Math.ceil((diff / maxSafeRate) * 7.0f);
                         System.out.println("Recommended target duration for " + diff + " kg change: At least " + recommendedDays + " days.");
 

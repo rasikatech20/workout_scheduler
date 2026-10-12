@@ -30,18 +30,6 @@ public class ExerciseScheduler {
         this(exercises, targetDays, daysPerWeek, 1.0f);
     }
 
-    public int computeNoOFExercisesperday() {
-        int totalWeeks = (targetDays + 6) / 7;
-        int totalWorkoutDays = totalWeeks * daysPerWeek;
-
-        if (totalWorkoutDays <= 0) {
-            return 0;
-        }
-
-        return (int) Math.ceil(
-            (double) exercises.size() / totalWorkoutDays
-        );
-    }
 
     public boolean hasMoreExercises() {
         return currentIndex < exercises.size();
@@ -95,7 +83,7 @@ public class ExerciseScheduler {
     public List<Workout> getWorkoutSchedule(HealthGoal healthGoal) {
         List<Workout> schedule = new ArrayList<>();
 
-        int totalWorkoutDays = ((targetDays + 6) / 7) * daysPerWeek;
+        int totalWorkoutDays = Math.min(targetDays, daysPerWeek * ((targetDays + daysPerWeek - 1) / daysPerWeek));
 
         if (totalWorkoutDays <= 0 || hoursPerDay <= 0
                 || exercises.isEmpty()) {
