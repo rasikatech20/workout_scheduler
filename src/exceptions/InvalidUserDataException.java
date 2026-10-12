@@ -7,4 +7,9 @@ public class InvalidUserDataException extends Exception {
     public InvalidUserDataException(String message) {
         super(message);
     }
+    public String toString()
+    {    
+        return "User fields cannot be null";
+    }
+
 }
