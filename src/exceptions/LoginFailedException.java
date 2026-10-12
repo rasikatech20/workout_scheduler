@@ -7,4 +7,9 @@ public class LoginFailedException extends Exception {
     public LoginFailedException(String message) {
         super(message);
     }
+    public String toString()
+    {    
+        return "Invalid username ! login failed";
+    }
+
 }
